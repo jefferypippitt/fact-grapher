@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/core", "ultracite/next"],
+  "files": {
+    "includes": ["**/*", "!components/ui", "!lib", "!hooks"]
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "useAwait": "error"
+      }
+    }
+  }
+}
