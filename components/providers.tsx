@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export default function Providers({ children }: { children: ReactNode }) {
       enableSystem
     >
       {children}
+      <Toaster />
     </ThemeProvider>
   );
 }

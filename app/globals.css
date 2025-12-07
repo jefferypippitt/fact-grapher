@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@source "../node_modules/streamdown/dist/index.js";
 
 @custom-variant dark (&:is(.dark *));
 :root {
@@ -47,16 +48,16 @@
   --shadow-color: hsl(0 0% 0%);
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
   --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-  --shadow-sm:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow-md:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
-  --shadow-lg:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
-  --shadow-xl:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
+  --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+  --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+  --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 2px 4px -1px hsl(0 0% 0% / 0.18);
+  --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 4px 6px -1px hsl(0 0% 0% / 0.18);
+  --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 8px 10px -1px hsl(0 0% 0% / 0.18);
   --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
@@ -107,16 +108,16 @@
   --shadow-color: hsl(0 0% 0%);
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
   --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.09);
-  --shadow-sm:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 1px 2px -1px hsl(0 0% 0% / 0.18);
-  --shadow-md:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 2px 4px -1px hsl(0 0% 0% / 0.18);
-  --shadow-lg:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 4px 6px -1px hsl(0 0% 0% / 0.18);
-  --shadow-xl:
-    0px 1px 2px 0px hsl(0 0% 0% / 0.18), 0px 8px 10px -1px hsl(0 0% 0% / 0.18);
+  --shadow-sm: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+  --shadow: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 1px 2px -1px hsl(0 0% 0% / 0.18);
+  --shadow-md: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 2px 4px -1px hsl(0 0% 0% / 0.18);
+  --shadow-lg: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 4px 6px -1px hsl(0 0% 0% / 0.18);
+  --shadow-xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.18),
+    0px 8px 10px -1px hsl(0 0% 0% / 0.18);
   --shadow-2xl: 0px 1px 2px 0px hsl(0 0% 0% / 0.45);
 }
 
@@ -179,6 +180,65 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Hide scrollbar while keeping scroll functionality - comprehensive approach */
+  .conversation-scrollbar,
+  .conversation-scrollbar *,
+  .conversation-scrollbar > *,
+  .conversation-scrollbar [data-stick-to-bottom-viewport],
+  .conversation-scrollbar div[style*="overflow"],
+  .conversation-scrollbar [class*="overflow"],
+  .conversation-scrollbar [style*="overflow-y"],
+  .conversation-scrollbar [style*="overflow-x"] {
+    /* Firefox */
+    scrollbar-width: none !important;
+    /* IE and Edge */
+    -ms-overflow-style: none !important;
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) - hide all scrollbar parts */
+  .conversation-scrollbar::-webkit-scrollbar,
+  .conversation-scrollbar *::-webkit-scrollbar,
+  .conversation-scrollbar > *::-webkit-scrollbar,
+  .conversation-scrollbar [data-stick-to-bottom-viewport]::-webkit-scrollbar,
+  .conversation-scrollbar div[style*="overflow"]::-webkit-scrollbar,
+  .conversation-scrollbar [class*="overflow"]::-webkit-scrollbar,
+  .conversation-scrollbar [style*="overflow-y"]::-webkit-scrollbar,
+  .conversation-scrollbar [style*="overflow-x"]::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    appearance: none !important;
+  }
+
+  .conversation-scrollbar::-webkit-scrollbar-track,
+  .conversation-scrollbar *::-webkit-scrollbar-track,
+  .conversation-scrollbar > *::-webkit-scrollbar-track,
+  .conversation-scrollbar
+    [data-stick-to-bottom-viewport]::-webkit-scrollbar-track,
+  .conversation-scrollbar div[style*="overflow"]::-webkit-scrollbar-track,
+  .conversation-scrollbar [class*="overflow"]::-webkit-scrollbar-track,
+  .conversation-scrollbar [style*="overflow-y"]::-webkit-scrollbar-track,
+  .conversation-scrollbar [style*="overflow-x"]::-webkit-scrollbar-track {
+    display: none !important;
+    background: transparent !important;
+  }
+
+  .conversation-scrollbar::-webkit-scrollbar-thumb,
+  .conversation-scrollbar *::-webkit-scrollbar-thumb,
+  .conversation-scrollbar > *::-webkit-scrollbar-thumb,
+  .conversation-scrollbar
+    [data-stick-to-bottom-viewport]::-webkit-scrollbar-thumb,
+  .conversation-scrollbar div[style*="overflow"]::-webkit-scrollbar-thumb,
+  .conversation-scrollbar [class*="overflow"]::-webkit-scrollbar-thumb,
+  .conversation-scrollbar [style*="overflow-y"]::-webkit-scrollbar-thumb,
+  .conversation-scrollbar [style*="overflow-x"]::-webkit-scrollbar-thumb {
+    display: none !important;
+    background: transparent !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 }
 
