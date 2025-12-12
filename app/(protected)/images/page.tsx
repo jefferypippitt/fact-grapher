@@ -19,7 +19,7 @@ export default async function ImagesPage() {
   return (
     <div className="container mx-auto space-y-4 p-6">
       <div>
-        <h1 className="text-2xl">My Images</h1>
+        <h1 className="font-semibold text-3xl">My Images</h1>
         <p className="mt-2 text-muted-foreground">
           View, download, and manage your generated infographics
         </p>

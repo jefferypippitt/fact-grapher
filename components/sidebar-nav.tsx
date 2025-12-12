@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, Image, ShoppingCart } from "lucide-react";
+import { CreditCard, Home, Image, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -27,6 +27,11 @@ const navItems = [
     title: "Buy Tokens",
     url: "/pricing",
     icon: ShoppingCart,
+  },
+  {
+    title: "Customer Portal",
+    url: "/customer-portal",
+    icon: CreditCard,
   },
 ];
 

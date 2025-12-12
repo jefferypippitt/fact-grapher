@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
+import { validateImageFile } from "@/lib/image-validation";
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
@@ -26,18 +27,32 @@ export default function SignUp() {
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageError(null);
+
+      // Validate the image
+      const validation = await validateImageFile(file);
+
+      if (!validation.valid) {
+        setImageError(validation.error || "Invalid image file");
+        setImage(null);
+        setImagePreview(null);
+        // Reset the input
+        e.target.value = "";
+        return;
+      }
+
+      // If validation passed, set the image and preview
       setImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      if (validation.base64) {
+        setImagePreview(validation.base64);
+      }
     }
   };
 
@@ -119,29 +134,39 @@ export default function SignUp() {
                 <div className="relative h-16 w-16 overflow-hidden rounded-sm">
                   <Image
                     alt="Profile preview"
-                    layout="fill"
-                    objectFit="cover"
+                    className="object-cover"
+                    fill
                     src={imagePreview}
                   />
                 </div>
               ) : null}
-              <div className="flex w-full items-center gap-2">
-                <Input
-                  accept="image/*"
-                  className="w-full"
-                  id="image"
-                  onChange={handleImageChange}
-                  type="file"
-                />
-                {imagePreview ? (
-                  <X
-                    className="cursor-pointer"
-                    onClick={() => {
-                      setImage(null);
-                      setImagePreview(null);
-                    }}
+              <div className="flex w-full flex-col gap-2">
+                <div className="flex w-full items-center gap-2">
+                  <Input
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    className="w-full"
+                    id="image"
+                    onChange={handleImageChange}
+                    type="file"
                   />
-                ) : null}
+                  {imagePreview ? (
+                    <X
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setImage(null);
+                        setImagePreview(null);
+                        setImageError(null);
+                      }}
+                    />
+                  ) : null}
+                </div>
+                {imageError ? (
+                  <p className="text-destructive text-xs">{imageError}</p>
+                ) : (
+                  <p className="text-muted-foreground text-xs">
+                    Max 5MB. Allowed: JPEG, PNG, WebP
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -149,11 +174,23 @@ export default function SignUp() {
             className="w-full"
             disabled={loading}
             onClick={async () => {
+              let imageBase64 = "";
+
+              // Validate and process image if provided
+              if (image) {
+                const validation = await validateImageFile(image);
+                if (!validation.valid) {
+                  toast.error(validation.error || "Invalid image file");
+                  return;
+                }
+                imageBase64 = validation.base64 || "";
+              }
+
               await authClient.signUp.email({
                 email,
                 password,
                 name: `${firstName} ${lastName}`,
-                image: image ? await convertImageToBase64(image) : "",
+                image: imageBase64,
                 callbackURL: "/dashboard",
                 fetchOptions: {
                   onResponse: () => {
@@ -190,13 +227,4 @@ export default function SignUp() {
       </CardFooter>
     </Card>
   );
-}
-
-function convertImageToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }

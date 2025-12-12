@@ -8,14 +8,13 @@ export function CtaSection() {
       <div className="max-w-4xl">
         <div className="flex flex-col items-center gap-4 text-center">
           <h2 className="font-semibold text-2xl">
-            Start creating infographics in seconds
+            Start creating infographics now
           </h2>
           <p className="max-w-2xl text-muted-foreground text-sm">
-            Try Fact Grapher now—see your first visual before your next meeting.
-            No design tools or long setup required.
+            No long setup required.
           </p>
           <Button asChild size="lg">
-            <Link href="/sign-up">Start Free</Link>
+            <Link href="/sign-up">Start Now!</Link>
           </Button>
         </div>
       </div>

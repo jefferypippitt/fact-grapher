@@ -26,6 +26,19 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    // Note: Image validation is handled client-side in the sign-up component
+    // Server-side validation can be added via custom API route if needed
+  },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
+  user: {
+    deleteUser: {
+      enabled: true,
+    },
   },
  plugins: [
     polar({

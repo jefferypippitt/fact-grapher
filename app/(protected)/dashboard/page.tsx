@@ -26,8 +26,7 @@ export default async function Page() {
         <div className="mb-8 text-center">
           <h1 className="mb-2 font-bold text-3xl">Get Started</h1>
           <p className="text-muted-foreground">
-            You need tokens to use the chatbot. Choose a token pack that fits
-            your needs.
+            You need tokens to use unlock the chatbot
           </p>
         </div>
         <PricingCards />

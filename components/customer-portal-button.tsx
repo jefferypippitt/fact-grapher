@@ -2,33 +2,23 @@
 
 import { CreditCard } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 
-type CustomerPortalButtonProps = {
-  className?: string;
-  size?: "default" | "sm" | "lg" | "icon" | null | undefined;
-  variant?:
-    | "default"
-    | "destructive"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link"
-    | null
-    | undefined;
-};
-
-export default function CustomerPortalButton({
-  className = "w-full",
-  size = "sm",
-  variant = "outline",
-}: CustomerPortalButtonProps) {
+export default function CustomerPortalButton() {
   return (
-    <Button asChild className={className} size={size} variant={variant}>
-      <Link href="/customer-portal">
-        <CreditCard className="size-4" />
-        Customer Portal
-      </Link>
-    </Button>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton asChild tooltip="Customer Portal" variant="outline">
+          <Link href="/customer-portal">
+            <CreditCard className="size-4" />
+            <span>Customer Portal</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }

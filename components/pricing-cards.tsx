@@ -41,20 +41,20 @@ export default function PricingCards() {
     }
   };
 
-  const getPackDescription = (tokens: number) => {
+  const getPackFeatures = (tokens: number): string[] => {
     if (tokens === 1) {
-      return "Perfect for trying out our service! Get started with 1 token to explore what we offer.";
+      return ["Perfect for trying out our service!", "1 generation"];
     }
     if (tokens === 5) {
-      return "A great value pack for regular users! Get 5 tokens to power multiple interactions.";
+      return ["A great value pack for regular users!", "5 generations"];
     }
     if (tokens === 10) {
-      return "Our popular choice! Get 10 tokens for extended use and more flexibility.";
+      return ["Our popular choice!", "10 generations"];
     }
     if (tokens === 20) {
-      return "The best value! Get 20 tokens for maximum flexibility and extended usage.";
+      return ["The best value!", "20 generations"];
     }
-    return `Get ${tokens} tokens to power your experience.`;
+    return [`Get ${tokens} tokens to power your experience.`];
   };
 
   return (
@@ -71,15 +71,19 @@ export default function PricingCards() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-5 text-primary" />
-              <span className="font-semibold text-lg">
-                {product.tokens} {product.tokens === 1 ? "Token" : "Tokens"}
-              </span>
-            </div>
-            <p className="text-muted-foreground text-sm">
-              {getPackDescription(product.tokens)}
-            </p>
+            <ul className="flex flex-col gap-3">
+              {getPackFeatures(product.tokens).map((feature) => (
+                <li
+                  className="flex items-center gap-2"
+                  key={`${product.slug}-${feature}`}
+                >
+                  <CheckCircle2 className="size-4 shrink-0 text-primary" />
+                  <span className="text-base text-muted-foreground">
+                    {feature}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </CardContent>
           <CardFooter>
             <Button
