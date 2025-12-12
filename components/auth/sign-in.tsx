@@ -16,78 +16,16 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
 
-export default function SignInForm() {
+export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleEmailSignIn = async () => {
-    setError(null);
-    setLoading(true);
-
-    try {
-      const result = await signIn.email(
-        {
-          email,
-          password,
-        },
-        {
-          onRequest: () => {
-            setLoading(true);
-          },
-          onResponse: () => {
-            setLoading(false);
-          },
-        }
-      );
-
-      if (result.error) {
-        setError(result.error.message ?? "Failed to sign in");
-        return;
-      }
-
-      router.push("/dashboard");
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSocialSignIn = async (provider: "google" | "github") => {
-    setError(null);
-    setLoading(true);
-
-    try {
-      await signIn.social(
-        {
-          provider,
-          callbackURL: "/dashboard",
-        },
-        {
-          onRequest: () => {
-            setLoading(true);
-          },
-          onResponse: () => {
-            setLoading(false);
-          },
-        }
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-      setLoading(false);
-    }
-  };
-
   return (
-    <Card className="w-full max-w-md">
+    <Card className="z-50 w-full max-w-md rounded-md rounded-t-none">
       <CardHeader>
         <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
         <CardDescription className="text-xs md:text-sm">
@@ -96,17 +34,9 @@ export default function SignInForm() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
-          {error ? (
-            <div className="rounded-md bg-destructive/15 p-3 text-destructive text-sm">
-              {error}
-            </div>
-          ) : null}
-
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
-              autoComplete="email"
-              disabled={loading}
               id="email"
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -131,7 +61,6 @@ export default function SignInForm() {
 
             <Input
               autoComplete="current-password"
-              disabled={loading}
               id="password"
               onChange={(e) => setPassword(e.target.value)}
               placeholder="password"
@@ -141,50 +70,57 @@ export default function SignInForm() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Checkbox
-              checked={rememberMe}
-              disabled={loading}
-              id="remember"
-              onCheckedChange={(checked) => {
-                setRememberMe(checked === true);
-              }}
-            />
-            <Label className="cursor-pointer" htmlFor="remember">
-              Remember me
-            </Label>
+            <Checkbox id="remember" />
+            <Label htmlFor="remember">Remember me</Label>
           </div>
 
           <Button
             className="w-full"
-            disabled={loading || !email || !password}
-            onClick={handleEmailSignIn}
+            disabled={loading}
+            onClick={async () => {
+              await authClient.signIn.email(
+                {
+                  email,
+                  password,
+                  callbackURL: "/dashboard",
+                },
+                {
+                  onRequest: () => {
+                    setLoading(true);
+                  },
+                  onResponse: () => {
+                    setLoading(false);
+                  },
+                  onSuccess: () => {
+                    router.push("/dashboard");
+                  },
+                }
+              );
+            }}
             type="submit"
           >
             {loading ? <Loader2 className="animate-spin" size={16} /> : "Login"}
           </Button>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div
-            className={cn(
-              "flex w-full items-center gap-2",
-              "flex-col justify-between"
-            )}
-          >
+          <div className="flex w-full flex-col gap-2">
             <Button
-              className={cn("w-full gap-2")}
+              className="w-full gap-2"
               disabled={loading}
-              onClick={() => {
-                handleSocialSignIn("google");
+              onClick={async () => {
+                await authClient.signIn.social(
+                  {
+                    provider: "google",
+                    callbackURL: "/dashboard",
+                  },
+                  {
+                    onRequest: () => {
+                      setLoading(true);
+                    },
+                    onResponse: () => {
+                      setLoading(false);
+                    },
+                  }
+                );
               }}
               variant="outline"
             >
@@ -216,10 +152,23 @@ export default function SignInForm() {
               Sign in with Google
             </Button>
             <Button
-              className={cn("w-full gap-2")}
+              className="w-full gap-2"
               disabled={loading}
-              onClick={() => {
-                handleSocialSignIn("github");
+              onClick={async () => {
+                await authClient.signIn.social(
+                  {
+                    provider: "github",
+                    callbackURL: "/dashboard",
+                  },
+                  {
+                    onRequest: () => {
+                      setLoading(true);
+                    },
+                    onResponse: () => {
+                      setLoading(false);
+                    },
+                  }
+                );
               }}
               variant="outline"
             >
@@ -244,9 +193,16 @@ export default function SignInForm() {
       <CardFooter>
         <div className="flex w-full justify-center border-t py-4">
           <p className="text-center text-neutral-500 text-xs">
-            Don&apos;t have an account?{" "}
-            <Link className="underline" href="/sign-up">
-              Sign up
+            built with{" "}
+            <Link
+              className="underline"
+              href="https://better-auth.com"
+              rel="noopener"
+              target="_blank"
+            >
+              <span className="cursor-pointer dark:text-white/70">
+                better-auth.
+              </span>
             </Link>
           </p>
         </div>

@@ -1,4 +1,5 @@
 import { User } from "lucide-react";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { SidebarUserLogout } from "@/components/sidebar-user-logout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,10 +16,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { getServerSession } from "@/lib/auth-server";
+import { auth } from "@/lib/auth";
 
 export async function SidebarUser() {
-  const session = await getServerSession();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
   const userInitials =
     session?.user?.name

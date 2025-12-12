@@ -3,13 +3,13 @@
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { signOut } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 export function SidebarUserLogout() {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut();
+    await authClient.signOut();
     router.push("/sign-in");
     router.refresh();
   };

@@ -9,7 +9,9 @@ export default function SiteLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1">{children}</main>
+      <main className="container mx-auto max-w-4xl flex-1 px-4 py-4 md:py-6">
+        {children}
+      </main>
       <Footer />
     </div>
   );

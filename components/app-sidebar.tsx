@@ -1,6 +1,8 @@
 import { GalleryVerticalEnd } from "lucide-react";
 import Link from "next/link";
+import CustomerPortalButton from "@/components/customer-portal-button";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { SidebarTokenDisplay } from "@/components/sidebar-token-display";
 import { SidebarUser } from "@/components/sidebar-user";
 import {
   Sidebar,
@@ -11,7 +13,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-export function AppSidebar() {
+// biome-ignore lint/suspicious/useAwait: Next.js async server component pattern - renders async child components
+export async function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -27,9 +30,15 @@ export function AppSidebar() {
         </SidebarMenuButton>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarTokenDisplay />
         <SidebarNav />
       </SidebarContent>
       <SidebarFooter>
+        <div className="px-2 py-2">
+          <div className="w-full">
+            <CustomerPortalButton />
+          </div>
+        </div>
         <SidebarUser />
       </SidebarFooter>
       <SidebarRail />
