@@ -2,7 +2,7 @@
 
 import { InfoIcon } from "lucide-react";
 import { useState } from "react";
-
+import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -51,6 +51,57 @@ const styleDescriptions: Record<string, string> = {
     "Illustrates decisions, paths, and logical flows. Excellent for troubleshooting guides, decision trees, and showing cause-and-effect relationships.",
   "Hierarchical infographics":
     "Shows relationships and structure in a top-down or organizational format. Ideal for organizational charts, taxonomies, and classification systems.",
+};
+
+const styleExamples: Record<string, readonly string[]> = {
+  Timeline: [
+    "Create a timeline of World War II",
+    "Show the history of the Roman Empire",
+    "Timeline of the coffee bean lifecycle",
+    "Evolution of renewable energy over time",
+    "Chronological events leading to the fall of the Mongol Empire",
+    "Project milestones for Q4 2024",
+  ] as const,
+  Comparison: [
+    "Compare Mac vs PC features",
+    "Pros and cons of renewable energy",
+    "Before and after climate change impacts",
+    "Compare different programming languages",
+    "iPhone vs Android comparison",
+    "Electric vs gas vehicles",
+  ] as const,
+  "Process Infographics": [
+    "How to make coffee step by step",
+    "Customer journey from awareness to purchase",
+    "Manufacturing process of a smartphone",
+    "Recipe for making sourdough bread",
+    "Workflow for handling customer support tickets",
+    "Assembly instructions for furniture",
+  ] as const,
+  "Statistical infographics": [
+    "Visualize global population growth from 1950 to 2024",
+    "Sales trends for the last 5 years",
+    "Survey results about remote work preferences",
+    "Market research data on electric vehicles",
+    "Statistics on renewable energy adoption",
+    "Dashboard showing quarterly revenue metrics",
+  ] as const,
+  Flowchart: [
+    "Create a decision tree for choosing a programming language",
+    "Troubleshooting guide for network connectivity issues",
+    "Cause and effect diagram of climate change",
+    "Process flow for order fulfillment",
+    "Logic diagram for user authentication",
+    "Problem solving flowchart for debugging code",
+  ] as const,
+  "Hierarchical infographics": [
+    "Organizational chart of a tech company",
+    "Taxonomy of animal kingdom",
+    "Classification system for programming languages",
+    "Family tree of European monarchies",
+    "Directory structure of a web application",
+    "Category hierarchy for an e-commerce site",
+  ] as const,
 };
 
 export function StyleDetails() {
@@ -141,9 +192,16 @@ export function StyleDetails() {
                   <h2 className="mb-2 font-semibold text-2xl">
                     {selectedStyle}
                   </h2>
-                  <p className="text-base text-muted-foreground leading-relaxed">
+                  <p className="mb-4 text-base text-muted-foreground leading-relaxed">
                     {styleDescriptions[selectedStyle]}
                   </p>
+                  <div className="flex flex-wrap gap-2">
+                    {styleExamples[selectedStyle]?.map((example) => (
+                      <Badge key={example} variant="outline">
+                        {example}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { GalleryVerticalEnd } from "lucide-react";
 import Link from "next/link";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { SidebarSecondary } from "@/components/sidebar-secondary";
 import { SidebarTokenDisplay } from "@/components/sidebar-token-display";
 import { SidebarUser } from "@/components/sidebar-user";
 import {
@@ -31,6 +32,7 @@ export async function AppSidebar() {
       <SidebarContent>
         <SidebarTokenDisplay />
         <SidebarNav />
+        <SidebarSecondary />
       </SidebarContent>
       <SidebarFooter>
         <SidebarUser />
