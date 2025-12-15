@@ -154,7 +154,9 @@ export function PromptInputProvider({
     (FileUIPart & { id: string })[]
   >([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const openRef = useRef<() => void>(() => {});
+  const openRef = useRef<() => void>(() => {
+    // Empty function placeholder
+  });
 
   const add = useCallback((files: File[] | FileList) => {
     const incoming = Array.from(files);
@@ -311,6 +313,7 @@ export function PromptInputAttachment({
           <div className="relative size-5 shrink-0">
             <div className="absolute inset-0 flex size-5 items-center justify-center overflow-hidden rounded bg-background transition-opacity group-hover:opacity-0">
               {isImage ? (
+                // biome-ignore lint/performance/noImgElement: Using img for small thumbnails in attachment preview
                 <img
                   alt={filename || "attachment"}
                   className="size-5 object-cover"
@@ -344,8 +347,9 @@ export function PromptInputAttachment({
       </HoverCardTrigger>
       <PromptInputHoverCardContent className="w-auto p-2">
         <div className="w-auto space-y-3">
-          {isImage && (
+          {isImage ? (
             <div className="flex max-h-96 w-96 items-center justify-center overflow-hidden rounded-md border">
+              {/* biome-ignore lint/performance/noImgElement: Using img for preview in hover card */}
               <img
                 alt={filename || "attachment preview"}
                 className="max-h-full max-w-full object-contain"
@@ -354,17 +358,17 @@ export function PromptInputAttachment({
                 width={448}
               />
             </div>
-          )}
+          ) : null}
           <div className="flex items-center gap-2.5">
             <div className="min-w-0 flex-1 space-y-1 px-0.5">
               <h4 className="truncate font-semibold text-sm leading-none">
                 {filename || (isImage ? "Image" : "Attachment")}
               </h4>
-              {data.mediaType && (
+              {data.mediaType ? (
                 <p className="truncate font-mono text-muted-foreground text-xs">
                   {data.mediaType}
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -588,7 +592,9 @@ export const PromptInput = ({
 
   // Let provider know about our hidden file input so external menus can call openFileDialog()
   useEffect(() => {
-    if (!usingProvider) return;
+    if (!usingProvider) {
+      return;
+    }
     controller.__registerFileInput(inputRef, () => inputRef.current?.click());
   }, [usingProvider, controller]);
 
@@ -603,7 +609,9 @@ export const PromptInput = ({
   // Attach drop handlers on nearest form and document (opt-in)
   useEffect(() => {
     const form = formRef.current;
-    if (!form) return;
+    if (!form) {
+      return;
+    }
 
     const onDragOver = (e: DragEvent) => {
       if (e.dataTransfer?.types?.includes("Files")) {
@@ -627,7 +635,9 @@ export const PromptInput = ({
   }, [add]);
 
   useEffect(() => {
-    if (!globalDrop) return;
+    if (!globalDrop) {
+      return;
+    }
 
     const onDragOver = (e: DragEvent) => {
       if (e.dataTransfer?.types?.includes("Files")) {
@@ -654,7 +664,9 @@ export const PromptInput = ({
     () => () => {
       if (!usingProvider) {
         for (const f of filesRef.current) {
-          if (f.url) URL.revokeObjectURL(f.url);
+          if (f.url) {
+            URL.revokeObjectURL(f.url);
+          }
         }
       }
     },
@@ -719,7 +731,7 @@ export const PromptInput = ({
     // Convert blob URLs to data URLs asynchronously
     Promise.all(
       files.map(async ({ id, ...item }) => {
-        if (item.url && item.url.startsWith("blob:")) {
+        if (item.url?.startsWith("blob:")) {
           const dataUrl = await convertBlobUrlToDataUrl(item.url);
           // If conversion failed, keep the original blob URL
           return {
@@ -818,39 +830,48 @@ export const PromptInputTextarea = ({
   const attachments = usePromptInputAttachments();
   const [isComposing, setIsComposing] = useState(false);
 
-  const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
-    if (e.key === "Enter") {
-      if (isComposing || e.nativeEvent.isComposing) {
-        return;
-      }
-      if (e.shiftKey) {
-        return;
-      }
-      e.preventDefault();
+  const handleEnterKey = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+    form: HTMLFormElement | null
+  ) => {
+    if (isComposing || e.nativeEvent.isComposing) {
+      return;
+    }
+    if (e.shiftKey) {
+      return;
+    }
+    e.preventDefault();
 
-      // Check if the submit button is disabled before submitting
-      const form = e.currentTarget.form;
-      const submitButton = form?.querySelector(
-        'button[type="submit"]'
-      ) as HTMLButtonElement | null;
-      if (submitButton?.disabled) {
-        return;
-      }
-
-      form?.requestSubmit();
+    // Check if the submit button is disabled before submitting
+    const submitButton = form?.querySelector(
+      'button[type="submit"]'
+    ) as HTMLButtonElement | null;
+    if (submitButton?.disabled) {
+      return;
     }
 
-    // Remove last attachment when Backspace is pressed and textarea is empty
-    if (
-      e.key === "Backspace" &&
-      e.currentTarget.value === "" &&
-      attachments.files.length > 0
-    ) {
+    form?.requestSubmit();
+  };
+
+  const handleBackspaceKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.currentTarget.value === "" && attachments.files.length > 0) {
       e.preventDefault();
       const lastAttachment = attachments.files.at(-1);
       if (lastAttachment) {
         attachments.remove(lastAttachment.id);
       }
+    }
+  };
+
+  const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+    if (e.key === "Enter") {
+      handleEnterKey(e, e.currentTarget.form);
+      return;
+    }
+
+    // Remove last attachment when Backspace is pressed and textarea is empty
+    if (e.key === "Backspace") {
+      handleBackspaceKey(e);
     }
   };
 
@@ -1052,13 +1073,13 @@ interface SpeechRecognition extends EventTarget {
   lang: string;
   start(): void;
   stop(): void;
-  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => void) | null;
   onresult:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any)
+    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void)
     | null;
   onerror:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any)
+    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void)
     | null;
 }
 
@@ -1090,6 +1111,7 @@ interface SpeechRecognitionErrorEvent extends Event {
 }
 
 declare global {
+  // biome-ignore lint/style/useConsistentTypeDefinitions: Interface augmentation required for global Window
   interface Window {
     SpeechRecognition: {
       new (): SpeechRecognition;
@@ -1124,9 +1146,9 @@ export const PromptInputSpeechButton = ({
       typeof window !== "undefined" &&
       ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)
     ) {
-      const SpeechRecognition =
+      const SpeechRecognitionConstructor =
         window.SpeechRecognition || window.webkitSpeechRecognition;
-      const speechRecognition = new SpeechRecognition();
+      const speechRecognition = new SpeechRecognitionConstructor();
 
       speechRecognition.continuous = true;
       speechRecognition.interimResults = true;
@@ -1140,25 +1162,36 @@ export const PromptInputSpeechButton = ({
         setIsListening(false);
       };
 
-      speechRecognition.onresult = (event) => {
+      const extractFinalTranscript = (
+        event: SpeechRecognitionEvent
+      ): string => {
         let finalTranscript = "";
-
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i];
           if (result.isFinal) {
             finalTranscript += result[0]?.transcript ?? "";
           }
         }
+        return finalTranscript;
+      };
 
-        if (finalTranscript && textareaRef?.current) {
-          const textarea = textareaRef.current;
-          const currentValue = textarea.value;
-          const newValue =
-            currentValue + (currentValue ? " " : "") + finalTranscript;
+      const updateTextarea = (transcript: string) => {
+        if (!textareaRef?.current) {
+          return;
+        }
+        const textarea = textareaRef.current;
+        const currentValue = textarea.value;
+        const newValue = currentValue + (currentValue ? " " : "") + transcript;
 
-          textarea.value = newValue;
-          textarea.dispatchEvent(new Event("input", { bubbles: true }));
-          onTranscriptionChange?.(newValue);
+        textarea.value = newValue;
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        onTranscriptionChange?.(newValue);
+      };
+
+      speechRecognition.onresult = (event) => {
+        const finalTranscript = extractFinalTranscript(event);
+        if (finalTranscript) {
+          updateTextarea(finalTranscript);
         }
       };
 
@@ -1194,7 +1227,7 @@ export const PromptInputSpeechButton = ({
     <PromptInputButton
       className={cn(
         "relative transition-all duration-200",
-        isListening && "animate-pulse bg-accent text-accent-foreground",
+        isListening ? "animate-pulse bg-accent text-accent-foreground" : "",
         className
       )}
       disabled={!recognition}

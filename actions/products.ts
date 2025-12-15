@@ -50,12 +50,34 @@ export async function seedProducts() {
         .limit(1);
 
       if (existing) {
-        console.log(
-          `Product already exists: ${product.name} (${product.slug})`
-        );
+        // Update existing product to ensure tokenAmount is correct
+        if (
+          existing.tokenAmount !== product.tokenAmount ||
+          existing.name !== product.name ||
+          existing.slug !== product.slug
+        ) {
+          await db
+            .update(products)
+            .set({
+              tokenAmount: product.tokenAmount,
+              name: product.name,
+              slug: product.slug,
+              updatedAt: new Date(),
+            })
+            .where(eq(products.polarProductId, product.polarProductId));
+          console.log(
+            `Updated product: ${product.name} (${product.slug}) - tokenAmount: ${product.tokenAmount}`
+          );
+        } else {
+          console.log(
+            `Product already exists: ${product.name} (${product.slug})`
+          );
+        }
       } else {
         await db.insert(products).values(product);
-        console.log(`Inserted product: ${product.name} (${product.slug})`);
+        console.log(
+          `Inserted product: ${product.name} (${product.slug}) - tokenAmount: ${product.tokenAmount}`
+        );
       }
     }
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
-
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteImage } from "@/actions/images";
@@ -27,20 +26,20 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item";
-import { useUserImages } from "@/lib/hooks/use-user-images";
 
 type ImageData = {
   id: string;
   prompt: string;
   base64: string;
   mediaType: string;
-  createdAt: Date;
+  createdAt: string | Date;
 };
 
 export function ImageListItem({ image }: { image: ImageData }) {
-  const { refetch } = useUserImages();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
 
   const handleDownload = () => {
     const link = document.createElement("a");
@@ -55,12 +54,19 @@ export function ImageListItem({ image }: { image: ImageData }) {
   const handleDelete = () => {
     startTransition(async () => {
       try {
+        // Optimistically hide the item immediately
+        setIsDeleted(true);
+        setIsDeleteDialogOpen(false);
+
+        // Perform the actual deletion
         await deleteImage(image.id);
         toast.success("Image deleted successfully");
-        setIsDeleteDialogOpen(false);
-        // Refetch images using SWR's mutate
-        await refetch();
+
+        // Refresh the page to sync with server cache
+        router.refresh();
       } catch (error) {
+        // Revert optimistic update on error
+        setIsDeleted(false);
         toast.error(
           error instanceof Error ? error.message : "Failed to delete image"
         );
@@ -68,10 +74,15 @@ export function ImageListItem({ image }: { image: ImageData }) {
     });
   };
 
+  // Hide the item if it's been deleted (optimistic UI)
+  if (isDeleted) {
+    return null;
+  }
+
   return (
-    <Item>
+    <Item className="py-2">
       <ItemMedia>
-        <div className="relative size-24 overflow-hidden rounded-lg border bg-muted">
+        <div className="relative size-16 overflow-hidden rounded-lg border bg-muted">
           <AIImage
             alt={image.prompt}
             base64={image.base64}
@@ -80,15 +91,17 @@ export function ImageListItem({ image }: { image: ImageData }) {
           />
         </div>
       </ItemMedia>
-      <ItemContent className="gap-2">
+      <ItemContent className="gap-1">
         <div>
-          <ItemTitle>{image.prompt}</ItemTitle>
-          <ItemDescription>
-            {format(new Date(image.createdAt), "PPp")}
+          <ItemTitle className="text-sm">{image.prompt}</ItemTitle>
+          <ItemDescription className="text-xs">
+            {typeof image.createdAt === "string"
+              ? image.createdAt
+              : image.createdAt.toString()}
           </ItemDescription>
         </div>
       </ItemContent>
-      <ItemActions className="flex-row gap-2">
+      <ItemActions className="flex-row gap-1">
         <OpenInFullscreen
           trigger={
             <Button disabled={isPending} size="sm" variant="outline">
@@ -99,7 +112,7 @@ export function ImageListItem({ image }: { image: ImageData }) {
           <AIImage
             alt={image.prompt}
             base64={image.base64}
-            className="max-h-[85vh] max-w-full object-contain"
+            className="max-h-full max-w-full object-contain"
             mediaType={image.mediaType}
           />
         </OpenInFullscreen>

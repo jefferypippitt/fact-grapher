@@ -223,7 +223,7 @@ export const WebPreviewConsole = ({
           <ChevronDownIcon
             className={cn(
               "h-4 w-4 transition-transform duration-200",
-              consoleOpen && "rotate-180"
+              consoleOpen ? "rotate-180" : ""
             )}
           />
         </Button>

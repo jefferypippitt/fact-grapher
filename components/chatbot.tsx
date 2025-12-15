@@ -2,10 +2,10 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { CopyIcon, GlobeIcon } from "lucide-react";
+import { CopyIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   Conversation,
@@ -25,7 +25,6 @@ import {
 } from "@/components/ai-elements/message";
 import {
   PromptInput,
-  PromptInputButton,
   PromptInputFooter,
   PromptInputSelect,
   PromptInputSelectContent,
@@ -36,11 +35,6 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
-import {
-  Reasoning,
-  ReasoningContent,
-  ReasoningTrigger,
-} from "@/components/ai-elements/reasoning";
 import {
   Source,
   Sources,
@@ -179,12 +173,46 @@ function renderToolResultImage(
   return null;
 }
 
-const models = [
-  {
-    name: "Google Gemini 3 Pro Image",
-    value: "google/gemini-3-pro-image",
-  },
-];
+// =============================================================================
+// MODEL CONFIGURATION
+// =============================================================================
+// Currently using a single model. To add multi-model support in the future:
+//
+// 1. Uncomment the models array and add new model options:
+//    const models = [
+//      { name: "Google Gemini 3 Pro Image", value: "google/gemini-3-pro-image" },
+//      { name: "Google Gemini 4 Pro Image", value: "google/gemini-4-pro-image" },
+//      // Add more models as they become available
+//    ];
+//
+// 2. Add model state back to the component:
+//    const [model, setModel] = useState<string>(models[0].value);
+//    const previousModelRef = useRef<string>(models[0].value);
+//
+// 3. Add the model selector back to the UI (inside PromptInputTools):
+//    <PromptInputSelect
+//      onValueChange={(value) => {
+//        previousModelRef.current = model;
+//        setModel(value);
+//      }}
+//      value={model}
+//    >
+//      <PromptInputSelectTrigger>
+//        <PromptInputSelectValue />
+//      </PromptInputSelectTrigger>
+//      <PromptInputSelectContent>
+//        {models.map((modelOption) => (
+//          <PromptInputSelectItem key={modelOption.value} value={modelOption.value}>
+//            {modelOption.name}
+//          </PromptInputSelectItem>
+//        ))}
+//      </PromptInputSelectContent>
+//    </PromptInputSelect>
+//
+// 4. Update handleSubmit and handleSuggestionClick to use the dynamic model state
+//    instead of the CURRENT_MODEL constant.
+// =============================================================================
+const CURRENT_MODEL = "google/gemini-3-pro-image";
 
 const infographicStyles = [
   "Timeline",
@@ -198,10 +226,7 @@ const infographicStyles = [
 export default function AIChat() {
   const router = useRouter();
   const [input, setInput] = useState("");
-  const [model, setModel] = useState<string>(models[0].value);
-  const [webSearch, setWebSearch] = useState(false);
   const [style, setStyle] = useState<string>("");
-  const previousModelRef = useRef<string>(models[0].value);
   const { refetch: refetchTokens } = useUserTokens();
 
   const { messages, sendMessage, status } = useChat({
@@ -247,14 +272,11 @@ export default function AIChat() {
       { text: message.text },
       {
         body: {
-          model,
-          webSearch,
+          model: CURRENT_MODEL,
           style,
-          previousModel: previousModelRef.current,
         },
       }
     );
-    previousModelRef.current = model;
     setInput("");
   };
 
@@ -263,14 +285,11 @@ export default function AIChat() {
       { text: suggestion },
       {
         body: {
-          model,
-          webSearch,
+          model: CURRENT_MODEL,
           style,
-          previousModel: previousModelRef.current,
         },
       }
     );
-    previousModelRef.current = model;
   };
 
   const handleCopy = async (content: string) => {
@@ -327,19 +346,6 @@ export default function AIChat() {
                                 >
                                   {part.text}
                                 </MessageResponse>
-                              );
-                            case "reasoning":
-                              return (
-                                <Reasoning
-                                  className="w-full"
-                                  isStreaming={status === "streaming"}
-                                  key={`${message.id}-reasoning-${i}`}
-                                >
-                                  <ReasoningTrigger />
-                                  <ReasoningContent>
-                                    {part.text}
-                                  </ReasoningContent>
-                                </Reasoning>
                               );
                             case "file": {
                               // Extract base64 from data URL if present
@@ -477,56 +483,26 @@ export default function AIChat() {
             />
             <PromptInputFooter>
               <PromptInputTools>
-                <PromptInputButton
-                  onClick={() => setWebSearch(!webSearch)}
-                  variant={webSearch ? "default" : "ghost"}
-                >
-                  <GlobeIcon size={16} />
-                  <span>Search</span>
-                </PromptInputButton>
                 <PromptInputSelect
                   onValueChange={(value) => {
-                    previousModelRef.current = model;
-                    setModel(value);
+                    setStyle(value);
                   }}
-                  value={model}
+                  value={style || undefined}
                 >
                   <PromptInputSelectTrigger>
-                    <PromptInputSelectValue />
+                    <PromptInputSelectValue placeholder="Select style" />
                   </PromptInputSelectTrigger>
                   <PromptInputSelectContent>
-                    {models.map((modelOption) => (
+                    {infographicStyles.map((styleOption) => (
                       <PromptInputSelectItem
-                        key={modelOption.value}
-                        value={modelOption.value}
+                        key={styleOption}
+                        value={styleOption}
                       >
-                        {modelOption.name}
+                        {styleOption}
                       </PromptInputSelectItem>
                     ))}
                   </PromptInputSelectContent>
                 </PromptInputSelect>
-                {model === "google/gemini-3-pro-image" && (
-                  <PromptInputSelect
-                    onValueChange={(value) => {
-                      setStyle(value);
-                    }}
-                    value={style || undefined}
-                  >
-                    <PromptInputSelectTrigger>
-                      <PromptInputSelectValue placeholder="Select style" />
-                    </PromptInputSelectTrigger>
-                    <PromptInputSelectContent>
-                      {infographicStyles.map((styleOption) => (
-                        <PromptInputSelectItem
-                          key={styleOption}
-                          value={styleOption}
-                        >
-                          {styleOption}
-                        </PromptInputSelectItem>
-                      ))}
-                    </PromptInputSelectContent>
-                  </PromptInputSelect>
-                )}
               </PromptInputTools>
               <PromptInputSubmit disabled={!input} status={status} />
             </PromptInputFooter>

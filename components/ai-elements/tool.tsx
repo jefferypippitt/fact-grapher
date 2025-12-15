@@ -157,7 +157,7 @@ export const ToolOutput = ({
             : "bg-muted/50 text-foreground"
         )}
       >
-        {errorText && <div>{errorText}</div>}
+        {errorText ? <div>{errorText}</div> : null}
         {Output}
       </div>
     </div>

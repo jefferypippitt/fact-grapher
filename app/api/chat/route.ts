@@ -25,19 +25,51 @@ export type ChatTools = InferUITools<{
 }>;
 export type ChatMessage = UIMessage<never, UIDataTypes, ChatTools>;
 
+/**
+ * Determines the thinking level based on query complexity.
+ * Complex topics get 'high' thinking for deeper reasoning,
+ * simple queries get 'low' for faster responses.
+ */
+function determineThinkingLevel(prompt: string): "low" | "high" {
+  const complexIndicators = [
+    "history",
+    "timeline",
+    "compare",
+    "comparison",
+    "analyze",
+    "explain",
+    "process",
+    "lifecycle",
+    "evolution",
+    "statistical",
+    "scientific",
+    "research",
+    "data",
+    "empire",
+    "war",
+    "economic",
+    "how does",
+    "why did",
+    "what caused",
+  ];
+
+  const isComplex =
+    complexIndicators.some((indicator) =>
+      prompt.toLowerCase().includes(indicator)
+    ) || prompt.length > 100;
+
+  return isComplex ? "high" : "low";
+}
+
 export async function POST(req: Request) {
   const {
     messages,
     model,
-    webSearch,
     style,
-    previousModel,
   }: {
     messages: ChatMessage[];
     model: string;
-    webSearch: boolean;
     style?: string;
-    previousModel?: string;
   } = await req.json();
 
   // Check authentication
@@ -74,69 +106,41 @@ export async function POST(req: Request) {
 
   // Determine the base model to use
   // If the user selected the image model, use a text model that can call tools
-  // Otherwise use the selected model or web search model
-  let baseModel = model;
-  if (webSearch) {
-    baseModel = "perplexity/sonar";
-  } else if (model === "google/gemini-3-pro-image") {
-    baseModel = "google/gemini-3-pro";
+  // Always use Gemini 3 Pro for text generation (with optional Google Search grounding)
+  const baseModel =
+    model === "google/gemini-3-pro-image" ? "google/gemini-3-pro" : model;
+
+  // Only use the last user message - no conversation history needed
+  // Each request is independent, allowing continuous generation as long as users have tokens
+  const lastUserMessage = messages.filter((msg) => msg.role === "user").at(-1);
+
+  if (!lastUserMessage) {
+    return new Response(JSON.stringify({ error: "No user message found" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  // Detect model switch and truncate messages if needed to prevent token limit errors
-  const modelChanged = previousModel && previousModel !== model;
-  const MAX_MESSAGES_ON_MODEL_SWITCH = 20; // Keep last 20 messages when switching models
-  const MAX_TOTAL_CHARS = 800_000; // Conservative estimate: ~200k tokens (4 chars per token)
+  // Build the prompt from the user's message
+  const userPrompt =
+    lastUserMessage.parts
+      ?.filter((p) => p.type === "text")
+      .map((p) => p.text)
+      .join("") || "";
 
-  let messagesToProcess = messages;
-
-  // Calculate total character count as a proxy for token count
-  const totalChars = messages.reduce((sum, msg) => {
-    const textContent =
-      msg.parts
-        ?.filter((p) => p.type === "text")
-        .map((p) => p.text)
-        .join("") || "";
-    return sum + textContent.length;
-  }, 0);
-
-  // If model changed or messages are too long, truncate to prevent token limit errors
-  // Keep only recent messages to maintain context while staying within token limits
-  if (modelChanged || totalChars > MAX_TOTAL_CHARS) {
-    messagesToProcess = messages.slice(-MAX_MESSAGES_ON_MODEL_SWITCH);
-  }
-
-  // If style is provided and user wants image generation, add it to the last user message
-  // so the model knows to use the style parameter when calling the tool
-  const messagesToSend =
+  // Create a clean message array with just the current user request
+  // Add style to prompt if provided
+  const finalPrompt =
     style?.trim() && model === "google/gemini-3-pro-image"
-      ? messagesToProcess.map((msg, index) => {
-          if (
-            index === messagesToProcess.length - 1 &&
-            msg.role === "user" &&
-            msg.parts
-          ) {
-            const lastUserMessage = messagesToProcess.at(-1);
-            const basePrompt =
-              lastUserMessage?.parts
-                ?.filter((p) => p.type === "text")
-                .map((p) => p.text)
-                .join("") || "";
+      ? `Create a ${style} infographic: ${userPrompt}`
+      : userPrompt;
 
-            return {
-              ...msg,
-              parts: msg.parts.map((part) =>
-                part.type === "text"
-                  ? {
-                      ...part,
-                      text: `Create a ${style} infographic: ${basePrompt}`,
-                    }
-                  : part
-              ),
-            };
-          }
-          return msg;
-        })
-      : messagesToProcess;
+  const messagesToProcess: ChatMessage[] = [
+    {
+      ...lastUserMessage,
+      parts: [{ type: "text", text: finalPrompt }],
+    },
+  ];
 
   // Create tools
   const chatTools = {
@@ -172,21 +176,60 @@ export async function POST(req: Request) {
           throw new Error("Prompt is required");
         }
 
-        // Build the image generation prompt
-        const imageGenerationPrompt = infographicStyle
-          ? `Create a ${infographicStyle} infographic: ${prompt}. Include clear labels, diagrams, and visual elements.`
-          : `Create an accurate, informative infographic explaining: ${prompt}. Include clear labels, diagrams, and visual elements.`;
-
         const gateway = createGateway({
           apiKey,
         });
 
-        // Use the selected model for image generation
+        // Step 1: Use Gemini 3 Pro with high thinking to enhance the prompt
+        // This analyzes the request and creates a detailed, structured prompt for better infographics
+        const promptEnhancementRequest = infographicStyle
+          ? `You are an expert infographic designer. Analyze this request and create a detailed, optimized prompt for generating a ${infographicStyle} infographic.
+
+User request: ${prompt}
+
+Create a comprehensive prompt that specifies:
+1. The exact visual layout and structure for a ${infographicStyle} infographic
+2. Key data points, facts, or steps to include
+3. Color scheme and visual style recommendations
+4. Specific labels, icons, and visual elements needed
+5. How to organize the information for maximum clarity
+
+Output ONLY the enhanced prompt, nothing else.`
+          : `You are an expert infographic designer. Analyze this request and create a detailed, optimized prompt for generating an informative infographic.
+
+User request: ${prompt}
+
+Create a comprehensive prompt that specifies:
+1. The best infographic type/layout for this topic
+2. Key data points, facts, or steps to include
+3. Color scheme and visual style recommendations
+4. Specific labels, icons, and visual elements needed
+5. How to organize the information for maximum clarity
+
+Output ONLY the enhanced prompt, nothing else.`;
+
+        const promptEnhancement = await generateText({
+          model: gateway("google/gemini-3-pro"),
+          prompt: promptEnhancementRequest,
+          providerOptions: {
+            google: {
+              thinkingConfig: {
+                thinkingLevel: "high",
+                includeThoughts: false,
+              },
+            },
+          },
+        });
+
+        // Use the enhanced prompt for image generation
+        const enhancedPrompt = promptEnhancement.text || prompt;
+
+        // Step 2: Generate the image with the enhanced prompt
         const imageModel = gateway("google/gemini-3-pro-image");
 
         const imageResult = await generateText({
           model: imageModel,
-          prompt: imageGenerationPrompt,
+          prompt: `Create an accurate, informative infographic: ${enhancedPrompt}`,
           providerOptions: {
             google: {
               responseModalities: ["IMAGE"],
@@ -234,18 +277,32 @@ export async function POST(req: Request) {
     }),
   };
 
+  // Determine thinking level based on query complexity
+  const thinkingLevel = determineThinkingLevel(userPrompt);
+
+  // Generate response - each request is independent, no history needed
   const streamResult = streamText({
     model: baseModel,
-    messages: convertToModelMessages(messagesToSend),
+    messages: convertToModelMessages(messagesToProcess),
     tools: chatTools,
     stopWhen: stepCountIs(2), // Allow 2 steps: 1 for tool call, 1 for description text
     system:
       "You are Fact-Grapher, an AI assistant that creates accurate, informative infographics. When users request infographics, use the generateImage tool to create them. After the tool generates an image, you MUST immediately provide a clear, detailed, and educational explanation of what the infographic illustrates. Explain the key concepts, facts, timelines, processes, or information that the infographic conveys. Be comprehensive, helpful, and educational in your description. Always write a description after generating an image - this is required.",
+    providerOptions: {
+      google: {
+        // Always enable Google Search grounding for real-time, accurate infographics
+        useSearchGrounding: true,
+        thinkingConfig: {
+          thinkingLevel,
+          includeThoughts: false,
+        },
+      },
+    },
   });
 
-  // send sources and reasoning back to the client
+  // Send sources back to the client (reasoning is used internally for better quality, not displayed)
   return streamResult.toUIMessageStreamResponse({
     sendSources: true,
-    sendReasoning: true,
+    sendReasoning: false,
   });
 }

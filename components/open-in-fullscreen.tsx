@@ -19,10 +19,12 @@ export function OpenInFullscreen({ trigger, children }: OpenInFullscreenProps) {
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[95vh] max-w-[95vw] overflow-hidden p-0 md:max-h-[90vh] md:max-w-[90vw]">
+      <DialogContent className="h-[95vh] max-h-[95vh] w-[95vw] max-w-[95vw] sm:max-w-[95vw]">
         <DialogTitle className="sr-only">Image viewer</DialogTitle>
-        <div className="flex h-full w-full items-center justify-center p-4">
-          {children}
+        <div className="flex h-full w-full items-center justify-center overflow-auto p-0">
+          <div className="flex h-full w-full items-center justify-center">
+            {children}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

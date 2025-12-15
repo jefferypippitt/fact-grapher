@@ -74,7 +74,7 @@ export const PlanTitle = ({ children, ...props }: PlanTitleProps) => {
 
   return (
     <CardTitle data-slot="plan-title" {...props}>
-      {isStreaming ? <Shimmer>{children}</Shimmer> : children}
+      {isStreaming ? <Shimmer>{children}</Shimmer> : <span>{children}</span>}
     </CardTitle>
   );
 };
@@ -99,7 +99,7 @@ export const PlanDescription = ({
       data-slot="plan-description"
       {...props}
     >
-      {isStreaming ? <Shimmer>{children}</Shimmer> : children}
+      {isStreaming ? <Shimmer>{children}</Shimmer> : <span>{children}</span>}
     </CardDescription>
   );
 };

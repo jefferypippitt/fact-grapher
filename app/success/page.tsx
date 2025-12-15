@@ -1,5 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import { redirect } from "next/navigation";
+import { syncRecentPurchases } from "@/actions/tokens";
 import { DashboardLink } from "@/components/dashboard-link";
 import {
   Card,
@@ -33,6 +34,14 @@ export default async function SuccessPage({
   // If user navigates directly without any params, redirect to dashboard
   if (!hasSuccessParam) {
     redirect("/dashboard");
+  }
+
+  // Try to sync any recent purchases as a fallback if webhook didn't fire
+  try {
+    await syncRecentPurchases();
+  } catch (error) {
+    // Log error but don't fail the page - webhook might handle it later
+    console.error("Error syncing purchases on success page:", error);
   }
 
   return (

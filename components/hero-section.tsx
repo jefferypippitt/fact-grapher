@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { FeatureCard } from "@/components/feature-card";
 
@@ -75,6 +75,23 @@ const getFinalPosition = (index: number, imageSize: number) => {
 
 export function HeroSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio lazily (only in browser)
+  if (audioRef.current === null && typeof window !== "undefined") {
+    audioRef.current = new Audio("/paper-slide.mp3");
+    audioRef.current.volume = 0.3;
+    audioRef.current.preload = "auto";
+  }
+
+  const playHoverSound = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {
+        // Silently handle errors (e.g., autoplay blocked)
+      });
+    }
+  };
 
   return (
     <section className="flex items-center justify-center py-6">
@@ -107,7 +124,10 @@ export function HeroSection() {
                 }}
                 key={`${item.src}-${index}`}
                 onHoverEnd={() => setHoveredIndex(null)}
-                onHoverStart={() => setHoveredIndex(index)}
+                onHoverStart={() => {
+                  setHoveredIndex(index);
+                  playHoverSound();
+                }}
                 style={{
                   transformOrigin: "center center",
                 }}

@@ -151,6 +151,7 @@ export const QueueItemImage = ({
   className,
   ...props
 }: QueueItemImageProps) => (
+  // biome-ignore lint/performance/noImgElement: Using img for small queue item thumbnail
   <img
     alt=""
     className={cn("h-8 w-8 rounded border object-cover", className)}

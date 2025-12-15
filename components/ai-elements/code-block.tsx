@@ -118,11 +118,11 @@ export const CodeBlock = ({
             // biome-ignore lint/security/noDangerouslySetInnerHtml: "this is needed."
             dangerouslySetInnerHTML={{ __html: darkHtml }}
           />
-          {children && (
+          {children ? (
             <div className="absolute top-2 right-2 flex items-center gap-2">
               {children}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </CodeBlockContext.Provider>

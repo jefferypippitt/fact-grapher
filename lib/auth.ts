@@ -71,17 +71,19 @@ export const auth = betterAuth({
         webhooks({
           secret: process.env.POLAR_WEBHOOK_SECRET as string,
           onOrderPaid: async (order) => {
-            const externalCustomerId = order.data.customer.externalId;
+            console.log("Webhook onOrderPaid received:", JSON.stringify(order, null, 2));
+
+            const externalCustomerId = order.data.customer?.externalId;
 
             if (!externalCustomerId) {
-              console.error("No external customer ID found.");
+              console.error("No external customer ID found in order:", order);
               throw new Error("No external customer id found.");
             }
 
             const productId = order.data.productId;
 
             if (!productId) {
-              console.error("No product ID found in order.");
+              console.error("No product ID found in order:", order);
               throw new Error("No product ID found in order.");
             }
 
@@ -92,10 +94,16 @@ export const auth = betterAuth({
             // This will properly update the token count
             try {
               await insertPurchase(productId, externalCustomerId);
-              console.log("Purchase inserted successfully for productId:", productId);
+              console.log(
+                "Purchase inserted successfully for productId:",
+                productId,
+                "userId:",
+                externalCustomerId
+              );
             } catch (error) {
               console.error("Error inserting purchase:", error);
               console.error("Failed productId:", productId);
+              console.error("Failed externalCustomerId:", externalCustomerId);
               throw error;
             }
           },
