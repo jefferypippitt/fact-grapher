@@ -2,18 +2,45 @@
 
 import { and, count, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db/drizzle";
 import { image } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-// Cache tag for count invalidation (images list is not cached due to size)
 const getUserImagesCountCacheTag = (userId: string) =>
   `user-images-count-${userId}`;
+const getUserImagesCacheTag = (userId: string, page: number, limit: number) =>
+  `user-images-${userId}-${page}-${limit}`;
 
-// Fetch user images without caching - base64 data is too large for Next.js cache (2MB limit)
+const getUserImagesGeneralTag = (userId: string) => `user-images-${userId}`;
+
+async function getCachedUserImages(
+  userId: string,
+  page: number,
+  limit: number
+) {
+  "use cache";
+  cacheLife({
+    stale: 120,
+    revalidate: 300,
+    expire: 600,
+  });
+  cacheTag(getUserImagesCacheTag(userId, page, limit));
+  cacheTag(getUserImagesGeneralTag(userId));
+
+  const offset = (page - 1) * limit;
+
+  return await db
+    .select()
+    .from(image)
+    .where(eq(image.userId, userId))
+    .orderBy(desc(image.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
 export async function getUserImages(page = 1, limit = 7) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -23,15 +50,29 @@ export async function getUserImages(page = 1, limit = 7) {
     redirect("/sign-in");
   }
 
-  const offset = (page - 1) * limit;
+  return await getCachedUserImages(session.user.id, page, limit);
+}
 
-  return await db
-    .select()
+async function getCachedUserImagesCount(userId: string) {
+  "use cache";
+  cacheLife({
+    stale: 30, 
+    revalidate: 60, 
+    expire: 120, 
+  });
+  cacheTag(getUserImagesCountCacheTag(userId));
+  cacheTag(getUserImagesGeneralTag(userId));
+
+  const [result] = await db
+    .select({ count: count() })
     .from(image)
-    .where(eq(image.userId, session.user.id))
-    .orderBy(desc(image.createdAt))
-    .limit(limit)
-    .offset(offset);
+    .where(eq(image.userId, userId));
+
+  const countValue = result?.count;
+  const finalCount =
+    typeof countValue === "bigint" ? Number(countValue) : (countValue ?? 0);
+
+  return finalCount;
 }
 
 export async function getUserImagesCount() {
@@ -43,29 +84,15 @@ export async function getUserImagesCount() {
     redirect("/sign-in");
   }
 
-  const cachedFn = unstable_cache(
-    async () => {
-      const [result] = await db
-        .select({ count: count() })
-        .from(image)
-        .where(eq(image.userId, session.user.id));
-
-      return result?.count ?? 0;
-    },
-    [`user-images-count-${session.user.id}`],
-    {
-      revalidate: 60,
-      tags: [getUserImagesCountCacheTag(session.user.id)],
-    }
-  );
-
-  return cachedFn();
+  return await getCachedUserImagesCount(session.user.id);
 }
 
-// Helper to invalidate user's image count cache immediately
-// Using { expire: 0 } for immediate invalidation (critical for delete/create operations)
 function invalidateUserImageCountCache(userId: string) {
-  revalidateTag(getUserImagesCountCacheTag(userId), { expire: 0 });
+  revalidateTag(getUserImagesCountCacheTag(userId), "max");
+}
+
+function invalidateUserImagesCache(userId: string) {
+  revalidateTag(getUserImagesGeneralTag(userId), "max");
 }
 
 export async function saveImage(
@@ -82,10 +109,6 @@ export async function saveImage(
     throw new Error("Unauthorized");
   }
 
-  // Note: Tokens are already deducted in the chat API route before calling this function
-  // This tokensCost parameter is only for tracking purposes in the database
-  // We don't deduct tokens here since the chat request already handles it
-
   const imageId = nanoid();
 
   const [savedImage] = await db
@@ -100,8 +123,9 @@ export async function saveImage(
     })
     .returning();
 
-  // Invalidate the user's image cache (both list and count)
   invalidateUserImageCountCache(session.user.id);
+  invalidateUserImagesCache(session.user.id);
+  revalidatePath("/images");
 
   return { id: savedImage.id };
 }
@@ -115,14 +139,12 @@ export async function deleteImage(imageId: string) {
     throw new Error("Unauthorized");
   }
 
-  // Delete the image and verify ownership in a single query
   const [deletedImage] = await db
     .delete(image)
     .where(and(eq(image.id, imageId), eq(image.userId, session.user.id)))
     .returning();
 
   if (!deletedImage) {
-    // Check if image exists but doesn't belong to user
     const [existingImage] = await db
       .select()
       .from(image)
@@ -136,8 +158,9 @@ export async function deleteImage(imageId: string) {
     throw new Error("Forbidden");
   }
 
-  // Invalidate the user's image cache (both list and count)
   invalidateUserImageCountCache(session.user.id);
+  invalidateUserImagesCache(session.user.id);
+  revalidatePath("/images");
 
   return { success: true };
 }

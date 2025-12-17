@@ -3,7 +3,8 @@
 import { LogOut, Menu, User, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
+import type { getUserSession } from "@/actions/users";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
-import { useUser } from "@/lib/hooks/use-user";
+
+type Session = Awaited<ReturnType<typeof getUserSession>>;
 
 function getUserInitials(user: {
   name?: string | null;
@@ -148,11 +150,19 @@ function MobileAuthLinks({
   );
 }
 
-export default function Header() {
+export default function Header({
+  sessionPromise,
+}: {
+  sessionPromise?: Promise<Session>;
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user, isLoading, isAuthenticated } = useUser();
   const router = useRouter();
+
+  // Only use session if sessionPromise is provided
+  const session = sessionPromise ? use(sessionPromise) : null;
+  const user = session?.user;
+  const isAuthenticated = !!user;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -172,15 +182,50 @@ export default function Header() {
   };
 
   const renderAuthSection = () => {
-    if (isLoading) {
-      return null;
-    }
     if (isAuthenticated && user) {
       return <UserAvatar onSignOut={handleSignOut} user={user} />;
     }
     return <AuthButtons />;
   };
 
+  // Simple fallback version when no sessionPromise is provided
+  if (!sessionPromise) {
+    return (
+      <nav className="sticky top-0 z-50 pt-4">
+        <div className="container max-w-4xl rounded-xl border border-transparent bg-background/80 px-4 py-3 backdrop-blur-xl transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <Link
+              className="font-medium text-sm transition-colors hover:text-foreground/80"
+              href="/"
+            >
+              Fact Grapher
+            </Link>
+
+            <div className="flex items-center gap-2">
+              {/* Mobile Menu Button */}
+              <div className="flex items-center gap-2 md:hidden">
+                <Button
+                  aria-label="Toggle menu"
+                  className="p-2"
+                  onClick={toggleMenu}
+                  size="sm"
+                  variant="ghost"
+                >
+                  {isMenuOpen ? (
+                    <X className="h-4 w-4" />
+                  ) : (
+                    <Menu className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
+  // Full version with auth when sessionPromise is provided
   return (
     <nav className="sticky top-0 z-50 pt-4">
       <div
@@ -227,13 +272,11 @@ export default function Header() {
         {isMenuOpen ? (
           <div className="mt-3 border-t pt-4 pb-2 md:hidden">
             <div className="flex flex-col gap-3">
-              {!isLoading && (
-                <MobileAuthLinks
-                  isAuthenticated={isAuthenticated}
-                  onSignOut={handleSignOut}
-                  user={user}
-                />
-              )}
+              <MobileAuthLinks
+                isAuthenticated={isAuthenticated}
+                onSignOut={handleSignOut}
+                user={user}
+              />
             </div>
           </div>
         ) : null}

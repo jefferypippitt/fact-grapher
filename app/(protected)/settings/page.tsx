@@ -1,5 +1,4 @@
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { DeleteAccountButton } from "@/components/delete-account-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,10 +9,6 @@ export default async function SettingsPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-
-  if (!session) {
-    redirect("/sign-in");
-  }
 
   const userInitials =
     session?.user?.name

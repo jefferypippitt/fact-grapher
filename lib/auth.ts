@@ -26,8 +26,6 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    // Note: Image validation is handled client-side in the sign-up component
-    // Server-side validation can be added via custom API route if needed
   },
   socialProviders: {
     google: {

@@ -1,19 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { mutate } from "swr";
 import { Button } from "@/components/ui/button";
 
 export function DashboardLink() {
   const router = useRouter();
 
   const handleClick = () => {
-    // Invalidate SWR cache for user tokens to force refetch
-    mutate("user-tokens");
-    mutate((key) => Array.isArray(key) && key[0] === "user-tokens");
-    // Refresh the router to ensure fresh data is fetched
-    router.refresh();
     // Navigate to dashboard
+    // Token sync already happened automatically via AutoSyncPurchases
     router.push("/dashboard");
   };
 

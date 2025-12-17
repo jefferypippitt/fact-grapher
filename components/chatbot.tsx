@@ -43,7 +43,6 @@ import {
 } from "@/components/ai-elements/sources";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { StyleDetails } from "@/components/style-details";
-import { useUserTokens } from "@/lib/hooks/use-user-tokens";
 
 const suggestions = [
   "How to make an omlete",
@@ -227,7 +226,6 @@ export default function AIChat() {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [style, setStyle] = useState<string>("");
-  const { refetch: refetchTokens } = useUserTokens();
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -247,15 +245,17 @@ export default function AIChat() {
             onClick: () => router.push("/dashboard/buytoken"),
           },
         });
-        // Refetch tokens to update UI even on error
-        refetchTokens();
+        // Refresh to update UI even on error
+        router.refresh();
       } else {
         toast.error(errorMessage);
       }
     },
     onFinish: () => {
-      // Refetch tokens after a successful chat message to update the UI
-      refetchTokens();
+      // Refresh after a successful chat message to update the UI
+      router.refresh();
+      // Dispatch event to update token display immediately
+      window.dispatchEvent(new CustomEvent("tokens-updated"));
     },
   });
 

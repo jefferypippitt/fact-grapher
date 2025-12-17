@@ -1,6 +1,6 @@
 import { User } from "lucide-react";
-import { headers } from "next/headers";
 import Link from "next/link";
+import { getUserSession } from "@/actions/users";
 import { SidebarUserLogout } from "@/components/sidebar-user-logout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -16,21 +16,21 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { auth } from "@/lib/auth";
 
+// Fetch data directly in the component - Suspense handles the loading state
+// This ensures the promise is stable within the Suspense boundary
 export async function SidebarUser() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getUserSession();
+  const user = session?.user;
 
   const userInitials =
-    session?.user?.name
+    user?.name
       ?.split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
       .slice(0, 2) ??
-    session?.user?.email?.[0].toUpperCase() ??
+    user?.email?.[0].toUpperCase() ??
     "U";
 
   return (
@@ -44,8 +44,8 @@ export async function SidebarUser() {
             >
               <Avatar className="size-8 rounded-lg">
                 <AvatarImage
-                  alt={session?.user?.name ?? "User"}
-                  src={session?.user?.image ?? undefined}
+                  alt={user?.name ?? "User"}
+                  src={user?.image ?? undefined}
                 />
                 <AvatarFallback className="rounded-lg">
                   {userInitials}
@@ -53,9 +53,9 @@ export async function SidebarUser() {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {session?.user?.name ?? "User"}
+                  {user?.name ?? "User"}
                 </span>
-                <span className="truncate text-xs">{session?.user?.email}</span>
+                <span className="truncate text-xs">{user?.email}</span>
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -69,8 +69,8 @@ export async function SidebarUser() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="size-8 rounded-lg">
                   <AvatarImage
-                    alt={session?.user?.name ?? "User"}
-                    src={session?.user?.image ?? undefined}
+                    alt={user?.name ?? "User"}
+                    src={user?.image ?? undefined}
                   />
                   <AvatarFallback className="rounded-lg">
                     {userInitials}
@@ -78,11 +78,9 @@ export async function SidebarUser() {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {session?.user?.name ?? "User"}
+                    {user?.name ?? "User"}
                   </span>
-                  <span className="truncate text-xs">
-                    {session?.user?.email}
-                  </span>
+                  <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

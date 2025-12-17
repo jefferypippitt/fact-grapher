@@ -5,12 +5,14 @@ export type ImageProps = Omit<Experimental_GeneratedImage, "uint8Array"> & {
   className?: string;
   alt?: string;
   uint8Array?: Uint8Array;
+  loading?: "lazy" | "eager";
 };
 
 export const Image = ({
   base64,
   uint8Array,
   mediaType,
+  loading = "eager",
   ...props
 }: ImageProps) => (
   // biome-ignore lint/correctness/useImageSize: base64 images have dynamic dimensions
@@ -22,6 +24,7 @@ export const Image = ({
       "h-auto max-w-full overflow-hidden rounded-md",
       props.className
     )}
+    loading={loading}
     src={`data:${mediaType};base64,${base64}`}
   />
 );

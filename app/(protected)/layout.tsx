@@ -1,29 +1,23 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { auth } from "@/lib/auth";
+import { AuthGuard } from "./auth-guard";
 
-export default async function ProtectedLayout({
+
+export default function ProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect("/sign-in");
-  }
-
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <SiteHeader />
-        {children}
+        <Suspense fallback={null}>
+          <AuthGuard>{children}</AuthGuard>
+        </Suspense>
       </SidebarInset>
     </SidebarProvider>
   );

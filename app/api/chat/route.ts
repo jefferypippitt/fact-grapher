@@ -180,56 +180,39 @@ export async function POST(req: Request) {
           apiKey,
         });
 
-        // Step 1: Use Gemini 3 Pro with high thinking to enhance the prompt
-        // This analyzes the request and creates a detailed, structured prompt for better infographics
-        const promptEnhancementRequest = infographicStyle
-          ? `You are an expert infographic designer. Analyze this request and create a detailed, optimized prompt for generating a ${infographicStyle} infographic.
-
-User request: ${prompt}
-
-Create a comprehensive prompt that specifies:
-1. The exact visual layout and structure for a ${infographicStyle} infographic
-2. Key data points, facts, or steps to include
-3. Color scheme and visual style recommendations
-4. Specific labels, icons, and visual elements needed
-5. How to organize the information for maximum clarity
-
-Output ONLY the enhanced prompt, nothing else.`
-          : `You are an expert infographic designer. Analyze this request and create a detailed, optimized prompt for generating an informative infographic.
-
-User request: ${prompt}
-
-Create a comprehensive prompt that specifies:
-1. The best infographic type/layout for this topic
-2. Key data points, facts, or steps to include
-3. Color scheme and visual style recommendations
-4. Specific labels, icons, and visual elements needed
-5. How to organize the information for maximum clarity
-
-Output ONLY the enhanced prompt, nothing else.`;
-
-        const promptEnhancement = await generateText({
-          model: gateway("google/gemini-3-pro"),
-          prompt: promptEnhancementRequest,
-          providerOptions: {
-            google: {
-              thinkingConfig: {
-                thinkingLevel: "high",
-                includeThoughts: false,
-              },
-            },
-          },
-        });
-
-        // Use the enhanced prompt for image generation
-        const enhancedPrompt = promptEnhancement.text || prompt;
-
-        // Step 2: Generate the image with the enhanced prompt
+        // Build a direct prompt that explicitly requires real-world data
+        // No placeholder text - use actual facts, numbers, dates, names, statistics
         const imageModel = gateway("google/gemini-3-pro-image");
+
+        const imagePrompt = infographicStyle
+          ? `Create a ${infographicStyle} infographic about: ${prompt}
+
+CRITICAL REQUIREMENTS - Use REAL data only (NO placeholder text like "Lorem ipsum"):
+- Include actual dates, years, and time periods
+- Use real names of people, places, organizations, and events
+- Include specific numbers, statistics, percentages, and quantities
+- Display factual information, verified data, and accurate details
+- All text labels must be meaningful and factual
+- NO placeholder text, NO "Lorem ipsum", NO generic filler content
+- Every number, date, name, and fact must be real and accurate
+
+Make the infographic visually clear and informative with real-world information.`
+          : `Create an informative infographic about: ${prompt}
+
+CRITICAL REQUIREMENTS - Use REAL data only (NO placeholder text like "Lorem ipsum"):
+- Include actual dates, years, and time periods
+- Use real names of people, places, organizations, and events
+- Include specific numbers, statistics, percentages, and quantities
+- Display factual information, verified data, and accurate details
+- All text labels must be meaningful and factual
+- NO placeholder text, NO "Lorem ipsum", NO generic filler content
+- Every number, date, name, and fact must be real and accurate
+
+Make the infographic visually clear and informative with real-world information.`;
 
         const imageResult = await generateText({
           model: imageModel,
-          prompt: `Create an accurate, informative infographic: ${enhancedPrompt}`,
+          prompt: imagePrompt,
           providerOptions: {
             google: {
               responseModalities: ["IMAGE"],

@@ -8,9 +8,6 @@ import { db } from "@/db/drizzle";
 import { user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-/**
- * Get the current user session
- */
 export async function getUserSession() {
   try {
     const session = await auth.api.getSession({
@@ -24,9 +21,6 @@ export async function getUserSession() {
   }
 }
 
-/**
- * Get user by ID
- */
 export async function getUserById(userId: string) {
   try {
     const [userData] = await db
@@ -59,7 +53,6 @@ export async function deleteUserAccount() {
       throw new Error("User not authenticated");
     }
 
-    // Use Better Auth's server-side API directly
     const result = await auth.api.deleteUser({
       headers: await headers(),
       body: {},
@@ -69,7 +62,6 @@ export async function deleteUserAccount() {
       throw new Error("Failed to delete account");
     }
 
-    // Redirect to sign-in page after successful deletion
     redirect("/sign-in");
   } catch (e) {
     console.error("Error deleting user account:", e);

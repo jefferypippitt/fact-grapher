@@ -7,17 +7,8 @@ import { getUserById, getUserSession } from "@/actions/users";
 import { db } from "@/db/drizzle";
 import { products, purchases, tokenSpends, user } from "@/db/schema";
 
-/**
- * Calculate total tokens for a user
- * Total = (sum of tokenAmount from purchases) - (sum of amount from tokenSpends)
- */
-async function getTotalTokens(userId: string | undefined) {
-  if (!userId) {
-    return 0;
-  }
-
+async function calculateTotalTokens(userId: string) {
   try {
-    // Get total tokens purchased with detailed breakdown
     const purchasedTokens = await db
       .select({
         total: sum(products.tokenAmount),
@@ -26,7 +17,6 @@ async function getTotalTokens(userId: string | undefined) {
       .innerJoin(products, eq(purchases.productId, products.id))
       .where(eq(purchases.userId, userId));
 
-    // Get detailed purchase breakdown for debugging
     const purchaseDetails = await db
       .select({
         productName: products.name,
@@ -38,7 +28,6 @@ async function getTotalTokens(userId: string | undefined) {
       .innerJoin(products, eq(purchases.productId, products.id))
       .where(eq(purchases.userId, userId));
 
-    // Get total tokens spent
     const spentTokens = await db
       .select({
         total: sum(tokenSpends.amount),
@@ -68,10 +57,14 @@ async function getTotalTokens(userId: string | undefined) {
   }
 }
 
-/**
- * Refresh and update the user's token count in the database
- * This ensures the user.tokens field stays in sync with purchases and spends
- */
+async function getTotalTokens(userId: string | undefined) {
+  if (!userId) {
+    return 0;
+  }
+
+  return await calculateTotalTokens(userId);
+}
+
 export async function refreshUserTokens(userId: string) {
   try {
     const totalTokens = await getTotalTokens(userId);
@@ -96,9 +89,6 @@ export async function getTokens() {
   return totalUserTokens;
 }
 
-/**
- * Alias for getTokens() to match usage in the app
- */
 export async function getUserTokens() {
   return await getTokens();
 }
@@ -153,11 +143,10 @@ export async function insertPurchase(
       `Purchase inserted. User ${userData.id} now has ${newTokenCount} tokens.`
     );
 
-    // Revalidate dashboard and related paths to ensure UI updates
-    // Only if not called from render (e.g., during sync)
     if (shouldRevalidate) {
       revalidatePath("/dashboard");
       revalidatePath("/");
+      revalidatePath("/", "layout");
     }
 
     return product.name;
@@ -183,16 +172,11 @@ export async function spendTokens(amount: number, action: string) {
     })
     .returning();
 
-  // Refresh user tokens in the database after spending
   await refreshUserTokens(session.user.id);
 
   return tokenSpend;
 }
 
-/**
- * Deduct tokens from user account
- * This is an alias for spendTokens to match usage in the app
- */
 export async function deductTokens(userId: string, amount: number) {
   const [tokenSpend] = await db
     .insert(tokenSpends)
@@ -203,15 +187,11 @@ export async function deductTokens(userId: string, amount: number) {
     })
     .returning();
 
-  // Refresh user tokens in the database after deduction
   await refreshUserTokens(userId);
 
   return tokenSpend;
 }
 
-/**
- * Check if an order is already recorded as a purchase
- */
 function isOrderAlreadyRecorded(
   orderCreatedAt: Date | null,
   polarProductId: string,
@@ -229,9 +209,6 @@ function isOrderAlreadyRecorded(
   });
 }
 
-/**
- * Get Polar customer for a user by external ID
- */
 async function getPolarCustomerForUser(userId: string, polarClient: Polar) {
   const customersResponse = await polarClient.customers.list({ limit: 100 });
 
@@ -242,9 +219,6 @@ async function getPolarCustomerForUser(userId: string, polarClient: Polar) {
   return customersResponse.result.items.find((c) => c.externalId === userId);
 }
 
-/**
- * Process and sync a single order
- */
 async function processOrder(
   order: {
     status?: string;
@@ -268,8 +242,6 @@ async function processOrder(
   }
 
   try {
-    // Don't revalidate during sync (called from render)
-    // The page is already dynamic, so it will show updated data on next request
     await insertPurchase(polarProductId, userId, false);
     console.log(
       `Synced purchase for product ${polarProductId} for user ${userId}`
@@ -284,10 +256,6 @@ async function processOrder(
   }
 }
 
-/**
- * Sync recent purchases from Polar API
- * This is a fallback in case webhooks fail
- */
 export async function syncRecentPurchases() {
   try {
     const session = await getUserSession();
@@ -319,7 +287,6 @@ export async function syncRecentPurchases() {
       return { synced: 0 };
     }
 
-    // Get existing purchases for this user with their creation times
     const existingPurchases = await db
       .select({
         productId: products.polarProductId,
@@ -342,13 +309,26 @@ export async function syncRecentPurchases() {
       }
     }
 
-    // Note: We don't call revalidatePath here because this function
-    // is called during render. The page is already dynamic, so it will
-    // show updated data on the next request.
-
     return { synced: syncedCount };
   } catch (error) {
     console.error("Error syncing recent purchases:", error);
+    throw error;
+  }
+}
+
+export async function syncAndRevalidatePurchases() {
+  try {
+    const result = await syncRecentPurchases();
+
+    if (result.synced > 0) {
+      revalidatePath("/dashboard");
+      revalidatePath("/");
+      revalidatePath("/", "layout");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error syncing and revalidating purchases:", error);
     throw error;
   }
 }

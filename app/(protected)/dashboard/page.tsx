@@ -1,22 +1,8 @@
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { getUserTokens } from "@/actions/tokens";
 import Chatbot from "@/components/chatbot";
 import PricingCards from "@/components/pricing-cards";
-import { auth } from "@/lib/auth";
-
-// Force dynamic rendering to ensure fresh token data after purchase
-export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    redirect("/sign-in");
-  }
-
   const userTokens = await getUserTokens();
 
   // Protected gateway: Only show chatbot if user has tokens
@@ -26,7 +12,7 @@ export default async function Page() {
         <div className="mb-8 text-center">
           <h1 className="mb-2 font-bold text-3xl">Get Started</h1>
           <p className="text-muted-foreground">
-            You need tokens to use unlock the chatbot
+            You need tokens to generate infographics
           </p>
         </div>
         <PricingCards />
