@@ -14,7 +14,7 @@ export function CtaSection() {
             No long setup required.
           </p>
           <Button asChild size="default">
-            <Link href="/sign-up">Start Now!</Link>
+            <Link href="/sign-up">Get Started Now!</Link>
           </Button>
         </div>
       </div>
