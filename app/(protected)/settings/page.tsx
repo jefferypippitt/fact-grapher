@@ -23,7 +23,7 @@ export default async function SettingsPage() {
   return (
     <div className="container mx-auto min-h-[calc(100vh-8rem)] p-6">
       <div className="mb-8">
-        <h1 className="mb-2 font-bold text-3xl">Account Settings</h1>
+        <h1 className="mb-2 font-semibold text-2xl">Account Settings</h1>
         <p className="text-muted-foreground">
           Manage your account information and preferences.
         </p>

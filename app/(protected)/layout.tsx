@@ -4,7 +4,6 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AuthGuard } from "./auth-guard";
 
-
 export default function ProtectedLayout({
   children,
 }: {

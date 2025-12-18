@@ -90,6 +90,7 @@ export const image = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     prompt: text("prompt").notNull(),
     base64: text("base64").notNull(),
+    url: text("url"),
     mediaType: text("media_type").notNull(),
     tokensUsed: integer("tokens_used").default(1).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),

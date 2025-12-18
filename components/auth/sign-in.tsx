@@ -24,7 +24,7 @@ export default function SignIn() {
   const router = useRouter();
 
   return (
-    <Card className="z-50 w-full max-w-md rounded-md rounded-t-none">
+    <Card className="z-50 w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
         <CardDescription className="text-xs md:text-sm">

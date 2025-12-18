@@ -8,12 +8,12 @@ export function CtaSection() {
       <div className="max-w-4xl">
         <div className="flex flex-col items-center gap-4 text-center">
           <h2 className="font-semibold text-2xl">
-            Start creating infographics now
+            Start Creating Infographics Now
           </h2>
           <p className="max-w-2xl text-muted-foreground text-sm">
             No long setup required.
           </p>
-          <Button asChild size="lg">
+          <Button asChild size="default">
             <Link href="/sign-up">Start Now!</Link>
           </Button>
         </div>

@@ -133,6 +133,7 @@ export async function ImagesContent({
                   className="size-full object-cover"
                   loading="lazy"
                   mediaType={image.mediaType}
+                  url={image.url ?? undefined}
                 />
               </ItemMedia>
               <ItemContent className="gap-1">
@@ -147,6 +148,7 @@ export async function ImagesContent({
                   imageId={image.id}
                   mediaType={image.mediaType}
                   prompt={image.prompt}
+                  url={image.url ?? undefined}
                 />
               </ItemActions>
             </Item>

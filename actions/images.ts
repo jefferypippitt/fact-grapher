@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/drizzle";
 import { image } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { uploadBase64ToBlob } from "@/lib/blob-upload";
 
 const getUserImagesCountCacheTag = (userId: string) =>
   `user-images-count-${userId}`;
@@ -56,9 +57,9 @@ export async function getUserImages(page = 1, limit = 7) {
 async function getCachedUserImagesCount(userId: string) {
   "use cache";
   cacheLife({
-    stale: 30, 
-    revalidate: 60, 
-    expire: 120, 
+    stale: 30,
+    revalidate: 60,
+    expire: 120,
   });
   cacheTag(getUserImagesCountCacheTag(userId));
   cacheTag(getUserImagesGeneralTag(userId));
@@ -111,13 +112,24 @@ export async function saveImage(
 
   const imageId = nanoid();
 
+  // Upload base64 to Vercel Blob Storage and get URL
+  let imageUrl: string | undefined;
+  try {
+    imageUrl = await uploadBase64ToBlob(base64, mediaType, imageId);
+  } catch (error) {
+    // If blob upload fails, log error but continue with base64 storage
+    // This ensures backward compatibility and graceful degradation
+    console.error("Failed to upload image to blob storage:", error);
+  }
+
   const [savedImage] = await db
     .insert(image)
     .values({
       id: imageId,
       userId: session.user.id,
       prompt,
-      base64,
+      base64, // Keep base64 for backward compatibility during migration
+      url: imageUrl,
       mediaType,
       tokensUsed: tokensCost,
     })

@@ -1,34 +1,8 @@
 "use server";
 
-import { desc, eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 
-import { db } from "@/db/drizzle";
-import { purchases } from "@/db/schema";
 import { auth } from "@/lib/auth";
-
-export async function getBilling() {
-  try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
-
-    if (!session?.user) {
-      throw new Error("User not found");
-    }
-
-    const allPurchases = await db
-      .select()
-      .from(purchases)
-      .where(eq(purchases.userId, session.user.id))
-      .orderBy(desc(purchases.createdAt));
-
-    return allPurchases;
-  } catch (e) {
-    console.error("Error getting billing:", e);
-    throw e;
-  }
-}
 
 export async function initiateCheckout(slug: string) {
   try {

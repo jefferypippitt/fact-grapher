@@ -6,7 +6,7 @@ export function HowItWorks() {
           How Fact Grapher Works
         </h2>
         <p className="mb-8 text-center text-base text-muted-foreground">
-          Go from prompt to infographic—no design skills needed.
+          Quickly turn your ideas into captivating images with ease
         </p>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border bg-card p-4 text-left shadow-sm">

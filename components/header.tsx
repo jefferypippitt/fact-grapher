@@ -1,6 +1,7 @@
 "use client";
 
 import { LogOut, Menu, User, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
@@ -43,10 +44,10 @@ function getUserInitials(user: {
 function AuthButtons() {
   return (
     <div className="flex items-center gap-2">
-      <Button asChild size="sm" variant="ghost">
+      <Button asChild size="sm" variant="outline">
         <Link href="/sign-in">Sign In</Link>
       </Button>
-      <Button asChild size="sm">
+      <Button asChild size="sm" variant="default">
         <Link href="/sign-up">Sign Up</Link>
       </Button>
     </div>
@@ -114,20 +115,24 @@ function MobileAuthLinks({
 }) {
   if (!(isAuthenticated && user)) {
     return (
-      <>
-        <Link
-          className="py-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
-          href="/sign-in"
+      <div className="flex flex-col gap-2">
+        <Button
+          asChild
+          className="w-full justify-start"
+          size="sm"
+          variant="outline"
         >
-          Sign In
-        </Link>
-        <Link
-          className="py-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
-          href="/sign-up"
+          <Link href="/sign-in">Sign In</Link>
+        </Button>
+        <Button
+          asChild
+          className="w-full justify-start"
+          size="sm"
+          variant="default"
         >
-          Sign Up
-        </Link>
-      </>
+          <Link href="/sign-up">Sign Up</Link>
+        </Button>
+      </div>
     );
   }
 
@@ -195,10 +200,19 @@ export default function Header({
         <div className="container max-w-4xl rounded-xl border border-transparent bg-background/80 px-4 py-3 backdrop-blur-xl transition-all duration-200">
           <div className="flex items-center justify-between">
             <Link
-              className="font-medium text-sm transition-colors hover:text-foreground/80"
+              className="group flex items-center gap-2 transition-opacity hover:opacity-80"
               href="/"
             >
-              Fact Grapher
+              <Image
+                alt="Fact Grapher"
+                className="h-8 w-auto"
+                height={50}
+                src="/X-Pro-Fact-Grapher-Logo.jpg"
+                width={50}
+              />
+              <span className="flex items-center gap-1 text-[16px] tracking-[-1px] transition-opacity duration-300 group-hover:opacity-65">
+                Fact Grapher
+              </span>
             </Link>
 
             <div className="flex items-center gap-2">
@@ -237,10 +251,19 @@ export default function Header({
       >
         <div className="flex items-center justify-between">
           <Link
-            className="font-medium text-sm transition-colors hover:text-foreground/80"
+            className="group flex items-center gap-2 transition-opacity hover:opacity-80"
             href="/"
           >
-            Fact Grapher
+            <Image
+              alt="Fact Grapher"
+              className="size-8 w-auto"
+              height={50}
+              src="/X-Pro-Fact-Grapher-Logo.jpg"
+              width={50}
+            />
+            <span className="flex items-center gap-1 text-[16px] tracking-[-1px] transition-opacity duration-300 group-hover:opacity-65">
+              Fact Grapher
+            </span>
           </Link>
 
           <div className="flex items-center gap-2">

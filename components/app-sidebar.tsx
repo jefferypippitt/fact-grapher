@@ -1,4 +1,4 @@
-import { GalleryVerticalEnd } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { SidebarNav } from "@/components/sidebar-nav";
@@ -20,9 +20,13 @@ export function AppSidebar() {
       <SidebarHeader>
         <SidebarMenuButton asChild size="lg">
           <Link href="/dashboard">
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
+            <Image
+              alt="Fact Grapher"
+              className="size-8 rounded-lg object-contain"
+              height={32}
+              src="/X-Pro-Fact-Grapher-Logo.jpg"
+              width={32}
+            />
             <div className="flex flex-col gap-0.5 leading-none">
               <span className="font-semibold">Fact Grapher</span>
             </div>
