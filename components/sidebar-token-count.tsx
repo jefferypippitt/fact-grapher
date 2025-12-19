@@ -10,8 +10,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-// Fetch data directly in the component - Suspense handles the loading state
-// This ensures the promise is stable within the Suspense boundary
 export async function SidebarTokenCount() {
   const tokens = await getUserTokens();
 

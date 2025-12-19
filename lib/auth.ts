@@ -6,7 +6,6 @@ import {
   polar,
   checkout,
   portal,
-  usage,
   webhooks,
 } from "@polar-sh/better-auth";
 
@@ -69,8 +68,6 @@ export const auth = betterAuth({
         webhooks({
           secret: process.env.POLAR_WEBHOOK_SECRET as string,
           onOrderPaid: async (order) => {
-            console.log("Webhook onOrderPaid received:", JSON.stringify(order, null, 2));
-
             const externalCustomerId = order.data.customer?.externalId;
 
             if (!externalCustomerId) {
@@ -85,19 +82,8 @@ export const auth = betterAuth({
               throw new Error("No product ID found in order.");
             }
 
-            console.log("Webhook received productId:", productId);
-            console.log("Webhook received externalCustomerId:", externalCustomerId);
-
-            // Insert purchase into purchases table (which getUserTokens() uses)
-            // This will properly update the token count
             try {
               await insertPurchase(productId, externalCustomerId);
-              console.log(
-                "Purchase inserted successfully for productId:",
-                productId,
-                "userId:",
-                externalCustomerId
-              );
             } catch (error) {
               console.error("Error inserting purchase:", error);
               console.error("Failed productId:", productId);

@@ -3,9 +3,7 @@ import { seedProducts } from "@/actions/products";
 
 async function main() {
   try {
-    console.log("🌱 Starting product seeding...");
-    const result = await seedProducts();
-    console.log("✅", result.message);
+    await seedProducts();
     process.exit(0);
   } catch (error) {
     console.error("❌ Error seeding products:", error);

@@ -36,19 +36,16 @@ export default function SignUp() {
     if (file) {
       setImageError(null);
 
-      // Validate the image
       const validation = await validateImageFile(file);
 
       if (!validation.valid) {
         setImageError(validation.error || "Invalid image file");
         setImage(null);
         setImagePreview(null);
-        // Reset the input
         e.target.value = "";
         return;
       }
 
-      // If validation passed, set the image and preview
       setImage(file);
       if (validation.base64) {
         setImagePreview(validation.base64);
@@ -176,7 +173,6 @@ export default function SignUp() {
             onClick={async () => {
               let imageBase64 = "";
 
-              // Validate and process image if provided
               if (image) {
                 const validation = await validateImageFile(image);
                 if (!validation.valid) {

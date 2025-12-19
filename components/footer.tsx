@@ -18,7 +18,7 @@ export default function Footer() {
           Made by{" "}
           <Button asChild className="p-0" variant="link">
             <Link
-              href="https://www.jpippitt.com/"
+              href="https://github.com/jefferypippitt"
               rel="noopener noreferrer"
               target="_blank"
             >

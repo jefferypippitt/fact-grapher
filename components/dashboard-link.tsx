@@ -7,8 +7,6 @@ export function DashboardLink() {
   const router = useRouter();
 
   const handleClick = () => {
-    // Navigate to dashboard
-    // Token sync already happened automatically via AutoSyncPurchases
     router.push("/dashboard");
   };
 

@@ -53,31 +53,26 @@ function getPaginationPages(
   const showEllipsis = totalPages > 7;
 
   if (!showEllipsis) {
-    // Show all pages if 7 or fewer
     for (let i = 1; i <= totalPages; i++) {
       pages.push(i);
     }
     return pages;
   }
 
-  // Always show first page
   pages.push(1);
 
   if (currentPage <= 4) {
-    // Near the start: 1, 2, 3, 4, 5, ..., last
     for (let i = 2; i <= 5; i++) {
       pages.push(i);
     }
     pages.push("ellipsis");
     pages.push(totalPages);
   } else if (currentPage >= totalPages - 3) {
-    // Near the end: 1, ..., last-4, last-3, last-2, last-1, last
     pages.push("ellipsis");
     for (let i = totalPages - 4; i <= totalPages; i++) {
       pages.push(i);
     }
   } else {
-    // In the middle: 1, ..., current-1, current, current+1, ..., last
     pages.push("ellipsis");
     for (let i = currentPage - 1; i <= currentPage + 1; i++) {
       pages.push(i);

@@ -28,48 +28,41 @@ const gallery = [
   },
 ];
 
-// Deterministic pseudo-random function using index as seed
 const seededRandom = (seed: number) => {
-  // Simple seeded random using sine function for deterministic values
   const x = Math.sin(seed * 12.9898) * 43_758.5453;
   return x - Math.floor(x);
 };
 
-// Initial scattered positions (deterministic positions across the screen)
 const getInitialPosition = (index: number, imageSize: number) => {
   const angle = (index / gallery.length) * Math.PI * 2;
   const seed1 = index * 0.1;
   const seed2 = index * 0.2;
   const seed3 = index * 0.3;
-  const radius = 300 + seededRandom(seed1) * 150; // Reduced radius for more compact scatter
+  const radius = 300 + seededRandom(seed1) * 150;
   const x = Math.cos(angle) * radius + (seededRandom(seed2) - 0.5) * 200;
   const y = Math.sin(angle) * radius + (seededRandom(seed3) - 0.5) * 200;
   return {
-    x: x - imageSize / 2, // Account for left-1/2 positioning
-    y: y - imageSize / 2, // Account for top-1/2 positioning
+    x: x - imageSize / 2,
+    y: y - imageSize / 2,
     rotation: (seededRandom(seed1 + seed2) - 0.5) * 45,
   };
 };
 
-// Final arranged positions (overlapping, fanned arrangement with arch)
 const getFinalPosition = (index: number, imageSize: number) => {
-  const centerIndex = 2; // Center of the gallery
+  const centerIndex = 2;
   const offsetFromCenter = index - centerIndex;
-  const baseX = offsetFromCenter * 80; // Horizontal spacing with overlap
+  const baseX = offsetFromCenter * 80;
 
-  // Create an arch shape using a parabolic curve
-  // More pronounced arch: y increases quadratically from center
-  const archHeight = 60; // Maximum arch height
+  const archHeight = 60;
   const baseY = (offsetFromCenter * offsetFromCenter * archHeight) / 4;
 
-  // More pronounced fan rotation
-  const rotation = offsetFromCenter * 8; // Increased from 4 to 8 for more fan
+  const rotation = offsetFromCenter * 8;
 
   return {
-    x: baseX - imageSize / 2, // Account for left-1/2 positioning
-    y: baseY - imageSize / 2, // Account for top-1/2 positioning
+    x: baseX - imageSize / 2,
+    y: baseY - imageSize / 2,
     rotation,
-    zIndex: 10 - Math.abs(offsetFromCenter), // Center image on top
+    zIndex: 10 - Math.abs(offsetFromCenter),
   };
 };
 
@@ -77,7 +70,6 @@ export function HeroSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize audio lazily (only in browser)
   if (audioRef.current === null && typeof window !== "undefined") {
     audioRef.current = new Audio("/paper-slide.mp3");
     audioRef.current.volume = 0.3;
@@ -88,7 +80,7 @@ export function HeroSection() {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play().catch(() => {
-        // Silently handle errors (e.g., autoplay blocked)
+        console.error("Error playing hover sound");
       });
     }
   };
@@ -96,10 +88,9 @@ export function HeroSection() {
   return (
     <section className="flex items-center justify-center py-6">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-12 px-4">
-        {/* Image Gallery */}
         <div className="relative h-[400px] w-full max-w-4xl overflow-visible sm:h-[420px]">
           {gallery.map((item, index) => {
-            const imageSize = 200; // Reduced from 280
+            const imageSize = 200;
             const initial = getInitialPosition(index, imageSize);
             const final = getFinalPosition(index, imageSize);
             const isHovered = hoveredIndex === index;
@@ -149,7 +140,6 @@ export function HeroSection() {
           })}
         </div>
 
-        {/* Tagline */}
         <motion.div
           animate={{ opacity: 1, y: 0 }}
           className="text-center"

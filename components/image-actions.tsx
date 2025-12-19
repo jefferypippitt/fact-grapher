@@ -62,32 +62,27 @@ export function ImageActions({
   const router = useRouter();
 
   const handleDownload = async () => {
-    // Extract file extension from media type (e.g., "image/png" -> "png")
     const mediaTypePart = mediaType.split(";")[0]?.trim();
     const extension = mediaTypePart?.split("/")[1] || "png";
 
     let blob: Blob;
 
     if (url) {
-      // Fetch from URL
       try {
         blob = await fetchBlobFromUrl(url);
       } catch (error) {
         console.error("Failed to download image from URL:", error);
-        // Fallback to base64 if URL fetch fails
         if (!base64) {
           throw error;
         }
         blob = base64ToBlob(base64, mediaType);
       }
     } else if (base64) {
-      // Convert base64 to blob (fallback for backward compatibility)
       blob = base64ToBlob(base64, mediaType);
     } else {
       throw new Error("No image data available");
     }
 
-    // Create download link
     const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = objectUrl;
@@ -113,12 +108,18 @@ export function ImageActions({
   return (
     <div className="flex items-center gap-2">
       <OpenInFullscreen
-        tooltipLabel="View In Fullscreen"
         trigger={
-          <Button disabled={isDeleting} size="icon" variant="ghost">
-            <Maximize2 className="size-4" />
-            <span className="sr-only">View In Fullscreen</span>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button disabled={isDeleting} size="icon" variant="ghost">
+                <Maximize2 className="size-4" />
+                <span className="sr-only">View In Fullscreen</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View In Fullscreen</p>
+            </TooltipContent>
+          </Tooltip>
         }
       >
         <Image

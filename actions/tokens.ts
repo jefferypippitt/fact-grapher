@@ -17,17 +17,6 @@ async function calculateTotalTokens(userId: string) {
       .innerJoin(products, eq(purchases.productId, products.id))
       .where(eq(purchases.userId, userId));
 
-    const purchaseDetails = await db
-      .select({
-        productName: products.name,
-        productSlug: products.slug,
-        tokenAmount: products.tokenAmount,
-        purchaseId: purchases.id,
-      })
-      .from(purchases)
-      .innerJoin(products, eq(purchases.productId, products.id))
-      .where(eq(purchases.userId, userId));
-
     const spentTokens = await db
       .select({
         total: sum(tokenSpends.amount),
@@ -38,17 +27,6 @@ async function calculateTotalTokens(userId: string) {
     const purchased = Number(purchasedTokens[0]?.total ?? 0);
     const spent = Number(spentTokens[0]?.total ?? 0);
     const total = Math.max(0, purchased - spent);
-
-    console.log(`Token calculation for user ${userId}:`, {
-      purchases: purchaseDetails.map((p) => ({
-        product: p.productName,
-        slug: p.productSlug,
-        tokens: p.tokenAmount,
-      })),
-      totalPurchased: purchased,
-      totalSpent: spent,
-      finalTotal: total,
-    });
 
     return total;
   } catch (e) {
@@ -101,8 +79,6 @@ export async function insertPurchase(
   try {
     const userData = await getUserById(userId);
 
-    console.log("Looking for product with polarProductId:", polarProductId);
-
     const [product] = await db
       .select()
       .from(products)
@@ -110,7 +86,6 @@ export async function insertPurchase(
       .limit(1);
 
     if (!product) {
-      // Check what products exist in the database
       const allProducts = await db.select().from(products);
       console.error("Product not found. Searched for:", polarProductId);
       console.error(
@@ -128,20 +103,12 @@ export async function insertPurchase(
       );
     }
 
-    console.log(
-      `Inserting purchase: userId=${userData.id}, productId=${product.id}, productName=${product.name}, tokenAmount=${product.tokenAmount}`
-    );
-
     await db.insert(purchases).values({
       userId: userData.id,
       productId: product.id,
     });
 
-    // Refresh user tokens in the database after purchase
-    const newTokenCount = await refreshUserTokens(userData.id);
-    console.log(
-      `Purchase inserted. User ${userData.id} now has ${newTokenCount} tokens.`
-    );
+    await refreshUserTokens(userData.id);
 
     if (shouldRevalidate) {
       revalidatePath("/dashboard");
@@ -243,9 +210,6 @@ async function processOrder(
 
   try {
     await insertPurchase(polarProductId, userId, false);
-    console.log(
-      `Synced purchase for product ${polarProductId} for user ${userId}`
-    );
     return true;
   } catch (error) {
     console.error(
@@ -273,7 +237,6 @@ export async function syncRecentPurchases() {
       polarClient
     );
     if (!customer?.id) {
-      console.log("No Polar customer found for user:", session.user.id);
       return { synced: 0 };
     }
 
@@ -283,7 +246,6 @@ export async function syncRecentPurchases() {
     });
 
     if (!ordersResponse.result?.items) {
-      console.log("No orders found for customer:", customer.id);
       return { synced: 0 };
     }
 

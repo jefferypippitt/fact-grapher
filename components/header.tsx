@@ -164,7 +164,6 @@ export default function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
 
-  // Only use session if sessionPromise is provided
   const session = sessionPromise ? use(sessionPromise) : null;
   const user = session?.user;
   const isAuthenticated = !!user;
@@ -193,7 +192,6 @@ export default function Header({
     return <AuthButtons />;
   };
 
-  // Simple fallback version when no sessionPromise is provided
   if (!sessionPromise) {
     return (
       <nav className="sticky top-0 z-50 pt-4">
@@ -216,7 +214,6 @@ export default function Header({
             </Link>
 
             <div className="flex items-center gap-2">
-              {/* Mobile Menu Button */}
               <div className="flex items-center gap-2 md:hidden">
                 <Button
                   aria-label="Toggle menu"
@@ -239,7 +236,6 @@ export default function Header({
     );
   }
 
-  // Full version with auth when sessionPromise is provided
   return (
     <nav className="sticky top-0 z-50 pt-4">
       <div
@@ -267,12 +263,10 @@ export default function Header({
           </Link>
 
           <div className="flex items-center gap-2">
-            {/* Desktop Auth */}
             <div className="hidden items-center gap-2 md:flex">
               {renderAuthSection()}
             </div>
 
-            {/* Mobile Menu Button */}
             <div className="flex items-center gap-2 md:hidden">
               <Button
                 aria-label="Toggle menu"
@@ -291,7 +285,6 @@ export default function Header({
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         {isMenuOpen ? (
           <div className="mt-3 border-t pt-4 pb-2 md:hidden">
             <div className="flex flex-col gap-3">

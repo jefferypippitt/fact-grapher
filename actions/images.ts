@@ -112,13 +112,10 @@ export async function saveImage(
 
   const imageId = nanoid();
 
-  // Upload base64 to Vercel Blob Storage and get URL
   let imageUrl: string | undefined;
   try {
     imageUrl = await uploadBase64ToBlob(base64, mediaType, imageId);
   } catch (error) {
-    // If blob upload fails, log error but continue with base64 storage
-    // This ensures backward compatibility and graceful degradation
     console.error("Failed to upload image to blob storage:", error);
   }
 
@@ -128,7 +125,7 @@ export async function saveImage(
       id: imageId,
       userId: session.user.id,
       prompt,
-      base64, // Keep base64 for backward compatibility during migration
+      base64,
       url: imageUrl,
       mediaType,
       tokensUsed: tokensCost,

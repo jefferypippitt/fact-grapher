@@ -61,19 +61,9 @@ export async function seedProducts() {
               updatedAt: new Date(),
             })
             .where(eq(products.polarProductId, product.polarProductId));
-          console.log(
-            `Updated product: ${product.name} (${product.slug}) - tokenAmount: ${product.tokenAmount}`
-          );
-        } else {
-          console.log(
-            `Product already exists: ${product.name} (${product.slug})`
-          );
         }
       } else {
         await db.insert(products).values(product);
-        console.log(
-          `Inserted product: ${product.name} (${product.slug}) - tokenAmount: ${product.tokenAmount}`
-        );
       }
     }
 

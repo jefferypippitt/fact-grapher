@@ -26,12 +26,10 @@ export function DeleteAccountButton() {
     try {
       setIsDeleting(true);
       await deleteUserAccount();
-      // The server action will redirect, but we can also refresh just in case
       router.refresh();
     } catch (error) {
       setIsDeleting(false);
       setIsOpen(false);
-      // You could add toast notification here if you have one
       console.error("Failed to delete account:", error);
     }
   };

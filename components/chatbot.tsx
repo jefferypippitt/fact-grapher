@@ -136,7 +136,6 @@ function renderToolResultImage(
   messageId: string,
   index: number
 ) {
-  // Handle tool results - check if it's a generateImage tool result
   if (
     typeof part === "object" &&
     part !== null &&
@@ -252,9 +251,7 @@ export default function AIChat() {
       }
     },
     onFinish: () => {
-      // Refresh after a successful chat message to update the UI
       router.refresh();
-      // Dispatch event to update token display immediately
       window.dispatchEvent(new CustomEvent("tokens-updated"));
     },
   });
@@ -348,7 +345,6 @@ export default function AIChat() {
                                 </MessageResponse>
                               );
                             case "file": {
-                              // Extract base64 from data URL if present
                               const dataUrl = part.url ?? "";
                               const base64Match = dataUrl.match(DATA_URL_REGEX);
                               const extractedBase64 = base64Match?.[1];

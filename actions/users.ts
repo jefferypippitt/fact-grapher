@@ -40,9 +40,6 @@ export async function getUserById(userId: string) {
   }
 }
 
-/**
- * Delete the current user's account
- */
 export async function deleteUserAccount() {
   try {
     const session = await auth.api.getSession({

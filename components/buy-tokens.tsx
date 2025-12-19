@@ -25,7 +25,6 @@ export default function BuyTokens({ tokenPacks }: BuyTokensProps) {
   const buyTokens = async (slug: string) => {
     try {
       const result = await initiateCheckout(slug);
-      // If we get a redirect URL, navigate to it
       if (result?.url) {
         window.location.href = result.url;
       }

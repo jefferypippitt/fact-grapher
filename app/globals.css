@@ -189,7 +189,6 @@
     @apply bg-background text-foreground;
   }
 
-  /* Hide scrollbar while keeping scroll functionality - comprehensive approach */
   .conversation-scrollbar,
   .conversation-scrollbar *,
   .conversation-scrollbar > *,
@@ -198,13 +197,10 @@
   .conversation-scrollbar [class*="overflow"],
   .conversation-scrollbar [style*="overflow-y"],
   .conversation-scrollbar [style*="overflow-x"] {
-    /* Firefox */
     scrollbar-width: none !important;
-    /* IE and Edge */
     -ms-overflow-style: none !important;
   }
 
-  /* Webkit browsers (Chrome, Safari, Edge) - hide all scrollbar parts */
   .conversation-scrollbar::-webkit-scrollbar,
   .conversation-scrollbar *::-webkit-scrollbar,
   .conversation-scrollbar > *::-webkit-scrollbar,

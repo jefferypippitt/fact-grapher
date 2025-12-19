@@ -18,11 +18,9 @@ export async function initiateCheckout(slug: string) {
     const headersList = await headers();
     const baseURL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    // Get origin from request headers (required by Better Auth)
     const origin =
       headersList.get("origin") || headersList.get("referer") || baseURL;
 
-    // Call the Better Auth API checkout endpoint
     const response = await fetch(`${baseURL}/api/auth/checkout`, {
       method: "POST",
       headers: {
@@ -43,7 +41,6 @@ export async function initiateCheckout(slug: string) {
 
     const data = await response.json();
 
-    // If the response contains a redirect URL, return it
     if (data.url) {
       return { url: data.url };
     }
