@@ -229,7 +229,7 @@ export async function syncRecentPurchases() {
 
     const polarClient = new Polar({
       accessToken: process.env.POLAR_ACCESS_TOKEN as string,
-      server: "sandbox",
+      server: "production",
     });
 
     const customer = await getPolarCustomerForUser(

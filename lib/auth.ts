@@ -15,7 +15,7 @@ import { betterAuthSchema } from "@/db/schema";
 
 const polarClient = new Polar({
   accessToken: process.env.POLAR_ACCESS_TOKEN as string,
-  server: "sandbox",
+  server: "production",
 });
 
 export const auth = betterAuth({
