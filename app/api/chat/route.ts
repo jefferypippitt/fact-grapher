@@ -53,6 +53,51 @@ function determineThinkingLevel(prompt: string): "low" | "high" {
   return isComplex ? "high" : "low";
 }
 
+function validateImageDataUrl(
+  imageDataUrl: unknown
+): asserts imageDataUrl is string {
+  if (!imageDataUrl || typeof imageDataUrl !== "string") {
+    throw new Error("Invalid image data URL returned");
+  }
+
+  if (!imageDataUrl.startsWith("data:")) {
+    throw new Error(
+      `Image data URL format invalid: ${imageDataUrl.substring(0, 50)}...`
+    );
+  }
+}
+
+function logImageGeneration(imageDataUrl: string, userId: string) {
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.LOG_IMAGE_GENERATION
+  ) {
+    console.log("Tool generateImage returning:", {
+      hasDataUrl: !!imageDataUrl,
+      dataUrlStartsWith: imageDataUrl.substring(0, 30),
+      dataUrlLength: imageDataUrl.length,
+      userId,
+    });
+  }
+}
+
+function logImageGenerationError(
+  error: unknown,
+  userId: string,
+  prompt: string
+) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : undefined;
+  // Always log errors in production
+  console.error("[IMAGE GENERATION ERROR]", {
+    error: errorMessage,
+    stack: errorStack,
+    userId,
+    prompt: prompt.substring(0, 50),
+    timestamp: new Date().toISOString(),
+  });
+}
+
 function buildImagePrompt(prompt: string, style?: string): string {
   const requirements = `CRITICAL REQUIREMENTS - Use REAL data only (NO placeholder text like "Lorem ipsum"):
 - Include actual dates, years, and time periods
@@ -78,7 +123,8 @@ ${requirements}`;
 
 async function generateAndSaveImage(
   prompt: string,
-  style: string | undefined
+  style: string | undefined,
+  userId: string
 ): Promise<string> {
   const apiKey = process.env.AI_GATEWAY_API_KEY;
 
@@ -145,25 +191,117 @@ async function generateAndSaveImage(
       mediaType: validMediaType,
       base64Length: firstImage.base64.length,
       dataUrlPrefix: imageDataUrl.substring(0, 50),
+      userId,
     });
   }
 
   // Save image to database asynchronously (non-blocking - don't fail if save fails)
-  // Fire-and-forget: don't await, just start the promise
+  // Pass userId directly to avoid headers context issues in production
   Promise.resolve()
     .then(async () => {
       try {
-        await saveImage(prompt, firstImage.base64, validMediaType, 1);
+        await saveImage(prompt, firstImage.base64, validMediaType, {
+          tokensCost: 1,
+          userId,
+        });
+        // Always log success in production for debugging
+        console.log("[IMAGE SAVE SUCCESS]", {
+          userId,
+          prompt: prompt.substring(0, 50),
+          timestamp: new Date().toISOString(),
+        });
       } catch (error) {
-        // Log error for debugging but don't fail the request
-        console.error("Failed to save image to database (async):", error);
+        // Log error with full details for debugging
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        // Always log errors in production
+        console.error("[IMAGE SAVE ERROR]", {
+          error: errorMessage,
+          stack: errorStack,
+          userId,
+          prompt: prompt.substring(0, 50),
+          hasBase64: !!firstImage.base64,
+          base64Length: firstImage.base64?.length,
+          timestamp: new Date().toISOString(),
+        });
       }
     })
-    .catch(() => {
-      // Silently catch any errors in the promise chain
+    .catch((error) => {
+      // Log any promise chain errors
+      // Always log promise chain errors
+      console.error("[IMAGE SAVE PROMISE ERROR]", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        userId,
+        timestamp: new Date().toISOString(),
+      });
     });
 
   return imageDataUrl;
+}
+
+function validateRequest(
+  messages: ChatMessage[],
+  userTokens: number
+): Response | null {
+  const TOKENS_REQUIRED = 1;
+
+  if (userTokens < TOKENS_REQUIRED) {
+    return new Response(
+      JSON.stringify({
+        error: "Insufficient tokens",
+        message:
+          "You don't have enough tokens to use the chatbot. Please purchase a token pack.",
+        tokensRequired: TOKENS_REQUIRED,
+        tokensAvailable: userTokens,
+      }),
+      { status: 402, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  const lastUserMessage = messages.filter((msg) => msg.role === "user").at(-1);
+
+  if (!lastUserMessage) {
+    return new Response(JSON.stringify({ error: "No user message found" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  return null;
+}
+
+function prepareMessages(
+  messages: ChatMessage[],
+  model: string,
+  style?: string
+): { messagesToProcess: ChatMessage[]; userPrompt: string } {
+  const lastUserMessage = messages.filter((msg) => msg.role === "user").at(-1);
+
+  if (!lastUserMessage) {
+    throw new Error("No user message found");
+  }
+
+  const userPrompt =
+    lastUserMessage.parts
+      ?.filter((p) => p.type === "text")
+      .map((p) => p.text)
+      .join("") || "";
+
+  const finalPrompt =
+    style?.trim() && model === "google/gemini-3-pro-image"
+      ? `Create a ${style} infographic: ${userPrompt}`
+      : userPrompt;
+
+  const messagesToProcess: ChatMessage[] = [
+    {
+      ...lastUserMessage,
+      parts: [{ type: "text", text: finalPrompt }],
+    },
+  ];
+
+  return { messagesToProcess, userPrompt };
 }
 
 export async function POST(req: Request) {
@@ -188,53 +326,24 @@ export async function POST(req: Request) {
     });
   }
 
-  const TOKENS_REQUIRED = 1;
   const userTokens = await getUserTokens();
+  const validationError = validateRequest(messages, userTokens);
 
-  if (userTokens < TOKENS_REQUIRED) {
-    return new Response(
-      JSON.stringify({
-        error: "Insufficient tokens",
-        message:
-          "You don't have enough tokens to use the chatbot. Please purchase a token pack.",
-        tokensRequired: TOKENS_REQUIRED,
-        tokensAvailable: userTokens,
-      }),
-      { status: 402, headers: { "Content-Type": "application/json" } }
-    );
+  if (validationError) {
+    return validationError;
   }
 
+  const TOKENS_REQUIRED = 1;
   await deductTokens(session.user.id, TOKENS_REQUIRED);
 
   const baseModel =
     model === "google/gemini-3-pro-image" ? "google/gemini-3-pro" : model;
 
-  const lastUserMessage = messages.filter((msg) => msg.role === "user").at(-1);
-
-  if (!lastUserMessage) {
-    return new Response(JSON.stringify({ error: "No user message found" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const userPrompt =
-    lastUserMessage.parts
-      ?.filter((p) => p.type === "text")
-      .map((p) => p.text)
-      .join("") || "";
-
-  const finalPrompt =
-    style?.trim() && model === "google/gemini-3-pro-image"
-      ? `Create a ${style} infographic: ${userPrompt}`
-      : userPrompt;
-
-  const messagesToProcess: ChatMessage[] = [
-    {
-      ...lastUserMessage,
-      parts: [{ type: "text", text: finalPrompt }],
-    },
-  ];
+  const { messagesToProcess, userPrompt } = prepareMessages(
+    messages,
+    model,
+    style
+  );
 
   const chatTools = {
     generateImage: tool({
@@ -252,42 +361,19 @@ export async function POST(req: Request) {
           ),
       }),
       execute: async ({ prompt, style: infographicStyle }) => {
-        if (!session?.user) {
-          throw new Error("Unauthorized");
-        }
-
         try {
           const imageDataUrl = await generateAndSaveImage(
             prompt,
-            infographicStyle
+            infographicStyle,
+            session.user.id
           );
 
-          // Ensure the data URL is properly formatted
-          if (!imageDataUrl || typeof imageDataUrl !== "string") {
-            throw new Error("Invalid image data URL returned");
-          }
-
-          if (!imageDataUrl.startsWith("data:")) {
-            throw new Error(
-              `Image data URL format invalid: ${imageDataUrl.substring(0, 50)}...`
-            );
-          }
-
-          // Log for debugging
-          if (
-            process.env.NODE_ENV === "development" ||
-            process.env.LOG_IMAGE_GENERATION
-          ) {
-            console.log("Tool generateImage returning:", {
-              hasDataUrl: !!imageDataUrl,
-              dataUrlStartsWith: imageDataUrl.substring(0, 30),
-              dataUrlLength: imageDataUrl.length,
-            });
-          }
+          validateImageDataUrl(imageDataUrl);
+          logImageGeneration(imageDataUrl, session.user.id);
 
           return imageDataUrl;
         } catch (error) {
-          console.error("Error in generateImage tool execution:", error);
+          logImageGenerationError(error, session.user.id, prompt);
           throw error;
         }
       },
@@ -320,6 +406,20 @@ export async function POST(req: Request) {
           includeThoughts: false,
         },
       },
+    },
+    onFinish: (result) => {
+      // Log completion for debugging
+      if (
+        process.env.NODE_ENV === "development" ||
+        process.env.LOG_IMAGE_GENERATION
+      ) {
+        console.log("Stream finished:", {
+          userId: session.user.id,
+          textLength: result.text?.length ?? 0,
+          toolCalls: result.toolCalls?.length ?? 0,
+          finishReason: result.finishReason,
+        });
+      }
     },
   });
 

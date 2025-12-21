@@ -100,14 +100,25 @@ export async function saveImage(
   prompt: string,
   base64: string,
   mediaType: string,
-  tokensCost = 0
+  options?: { tokensCost?: number; userId?: string }
 ) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const tokensCost = options?.tokensCost ?? 0;
+  let finalUserId: string;
 
-  if (!session) {
-    throw new Error("Unauthorized");
+  if (options?.userId) {
+    // Use provided userId (for API route calls)
+    finalUserId = options.userId;
+  } else {
+    // Fall back to getting from session (for direct server action calls)
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    finalUserId = session.user.id;
   }
 
   const imageId = nanoid();
@@ -126,7 +137,7 @@ export async function saveImage(
       .insert(image)
       .values({
         id: imageId,
-        userId: session.user.id,
+        userId: finalUserId,
         prompt,
         base64,
         url: imageUrl,
@@ -136,8 +147,8 @@ export async function saveImage(
       .returning();
 
     // Invalidate caches and revalidate paths
-    invalidateUserImageCountCache(session.user.id);
-    invalidateUserImagesCache(session.user.id);
+    invalidateUserImageCountCache(finalUserId);
+    invalidateUserImagesCache(finalUserId);
     revalidatePath("/images", "page");
     revalidatePath("/images", "layout");
 
@@ -145,12 +156,15 @@ export async function saveImage(
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
-    console.error("Failed to save image to database:", {
+    // Always log errors in production
+    console.error("[DB SAVE IMAGE ERROR]", {
       error: errorMessage,
-      userId: session.user.id,
+      userId: finalUserId,
       imageId,
       hasBase64: !!base64,
       base64Length: base64?.length,
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString(),
     });
     throw new Error(`Failed to save image: ${errorMessage}`);
   }
