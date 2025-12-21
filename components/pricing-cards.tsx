@@ -29,8 +29,15 @@ export default function PricingCards() {
     try {
       const result = await initiateCheckout(slug);
 
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
       if (result.url) {
         window.location.href = result.url;
+      } else {
+        toast.error("Failed to initiate checkout. Please try again.");
       }
     } catch (error) {
       toast.error(

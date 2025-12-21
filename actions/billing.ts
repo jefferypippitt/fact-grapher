@@ -11,7 +11,10 @@ export async function initiateCheckout(slug: string) {
     });
 
     if (!session?.user) {
-      throw new Error("User not authenticated");
+      return {
+        error:
+          "You must be signed in to purchase tokens. Please sign in and try again.",
+      };
     }
 
     const cookieStore = await cookies();
@@ -33,10 +36,27 @@ export async function initiateCheckout(slug: string) {
     });
 
     if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Checkout failed" }));
-      throw new Error(error.message || "Checkout failed");
+      const errorText = await response.text();
+      let errorMessage = "Checkout failed. Please try again.";
+
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.message || errorJson.error || errorMessage;
+      } catch {
+        // If error is not JSON, use the text or default message
+        if (errorText) {
+          errorMessage = errorText;
+        }
+      }
+
+      // Log the full error for debugging
+      console.error("Checkout API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+      });
+
+      return { error: errorMessage };
     }
 
     const data = await response.json();
@@ -45,9 +65,19 @@ export async function initiateCheckout(slug: string) {
       return { url: data.url };
     }
 
-    return data;
+    if (data.error) {
+      return { error: data.error };
+    }
+
+    return {
+      error: "Invalid response from checkout. Please try again.",
+    };
   } catch (e) {
     console.error("Error initiating checkout:", e);
-    throw e;
+    const errorMessage =
+      e instanceof Error
+        ? e.message
+        : "An unexpected error occurred. Please try again.";
+    return { error: errorMessage };
   }
 }
