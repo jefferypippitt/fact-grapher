@@ -115,9 +115,10 @@ export async function saveImage(
   let imageUrl: string | undefined;
   try {
     imageUrl = await uploadBase64ToBlob(base64, mediaType, imageId);
-  } catch {
+  } catch (error) {
     // Continue without URL - base64 will be stored in database
     // Blob upload failure is non-critical as we have base64 fallback
+    console.error("Failed to upload image to blob storage:", error);
   }
 
   try {
@@ -142,9 +143,16 @@ export async function saveImage(
 
     return { id: savedImage.id };
   } catch (error) {
-    throw new Error(
-      `Failed to save image: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("Failed to save image to database:", {
+      error: errorMessage,
+      userId: session.user.id,
+      imageId,
+      hasBase64: !!base64,
+      base64Length: base64?.length,
+    });
+    throw new Error(`Failed to save image: ${errorMessage}`);
   }
 }
 

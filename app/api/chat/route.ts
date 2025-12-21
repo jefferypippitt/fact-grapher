@@ -128,15 +128,42 @@ async function generateAndSaveImage(
     );
   }
 
-  // Save image to database (non-blocking - don't fail if save fails)
-  try {
-    await saveImage(prompt, firstImage.base64, mediaType, 1);
-  } catch {
-    // Continue - still return the image data URL so it displays in the chatbot
-    // Error is logged in saveImage function
+  // Ensure mediaType is valid
+  const validMediaType = mediaType.startsWith("image/")
+    ? mediaType
+    : "image/png";
+
+  // Construct the data URL first to ensure we always return it
+  const imageDataUrl = `data:${validMediaType};base64,${firstImage.base64}`;
+
+  // Log for debugging (only in development or when explicitly enabled)
+  if (
+    process.env.NODE_ENV === "development" ||
+    process.env.LOG_IMAGE_GENERATION
+  ) {
+    console.log("Generated image data URL:", {
+      mediaType: validMediaType,
+      base64Length: firstImage.base64.length,
+      dataUrlPrefix: imageDataUrl.substring(0, 50),
+    });
   }
 
-  return `data:${mediaType};base64,${firstImage.base64}`;
+  // Save image to database asynchronously (non-blocking - don't fail if save fails)
+  // Fire-and-forget: don't await, just start the promise
+  Promise.resolve()
+    .then(async () => {
+      try {
+        await saveImage(prompt, firstImage.base64, validMediaType, 1);
+      } catch (error) {
+        // Log error for debugging but don't fail the request
+        console.error("Failed to save image to database (async):", error);
+      }
+    })
+    .catch(() => {
+      // Silently catch any errors in the promise chain
+    });
+
+  return imageDataUrl;
 }
 
 export async function POST(req: Request) {
@@ -229,11 +256,40 @@ export async function POST(req: Request) {
           throw new Error("Unauthorized");
         }
 
-        const imageDataUrl = await generateAndSaveImage(
-          prompt,
-          infographicStyle
-        );
-        return imageDataUrl;
+        try {
+          const imageDataUrl = await generateAndSaveImage(
+            prompt,
+            infographicStyle
+          );
+
+          // Ensure the data URL is properly formatted
+          if (!imageDataUrl || typeof imageDataUrl !== "string") {
+            throw new Error("Invalid image data URL returned");
+          }
+
+          if (!imageDataUrl.startsWith("data:")) {
+            throw new Error(
+              `Image data URL format invalid: ${imageDataUrl.substring(0, 50)}...`
+            );
+          }
+
+          // Log for debugging
+          if (
+            process.env.NODE_ENV === "development" ||
+            process.env.LOG_IMAGE_GENERATION
+          ) {
+            console.log("Tool generateImage returning:", {
+              hasDataUrl: !!imageDataUrl,
+              dataUrlStartsWith: imageDataUrl.substring(0, 30),
+              dataUrlLength: imageDataUrl.length,
+            });
+          }
+
+          return imageDataUrl;
+        } catch (error) {
+          console.error("Error in generateImage tool execution:", error);
+          throw error;
+        }
       },
       toModelOutput: () => ({
         type: "content",
