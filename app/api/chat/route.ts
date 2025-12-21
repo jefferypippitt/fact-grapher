@@ -131,9 +131,9 @@ async function generateAndSaveImage(
   // Save image to database (non-blocking - don't fail if save fails)
   try {
     await saveImage(prompt, firstImage.base64, mediaType, 1);
-  } catch (error) {
-    console.error("Failed to save image to database:", error);
+  } catch {
     // Continue - still return the image data URL so it displays in the chatbot
+    // Error is logged in saveImage function
   }
 
   return `data:${mediaType};base64,${firstImage.base64}`;
@@ -229,7 +229,11 @@ export async function POST(req: Request) {
           throw new Error("Unauthorized");
         }
 
-        return await generateAndSaveImage(prompt, infographicStyle);
+        const imageDataUrl = await generateAndSaveImage(
+          prompt,
+          infographicStyle
+        );
+        return imageDataUrl;
       },
       toModelOutput: () => ({
         type: "content",
