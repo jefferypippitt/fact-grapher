@@ -15,7 +15,10 @@ import { saveImage } from "@/actions/images";
 import { deductTokens, getUserTokens } from "@/actions/tokens";
 import { auth } from "@/lib/auth";
 
-export const maxDuration = 30;
+// Image generation time varies significantly by topic complexity
+// Simple topics: ~20-30s, Complex topics (history, timelines, comparisons): ~40-90s+
+// Set to 180s to accommodate the most complex infographic generation requests
+export const maxDuration = 180;
 
 export type ChatTools = InferUITools<{
   generateImage: ReturnType<typeof tool>;
@@ -195,48 +198,35 @@ async function generateAndSaveImage(
     });
   }
 
-  // Save image to database asynchronously (non-blocking - don't fail if save fails)
-  // Pass userId directly to avoid headers context issues in production
-  Promise.resolve()
-    .then(async () => {
-      try {
-        await saveImage(prompt, firstImage.base64, validMediaType, {
-          tokensCost: 1,
-          userId,
-        });
-        // Always log success in production for debugging
-        console.log("[IMAGE SAVE SUCCESS]", {
-          userId,
-          prompt: prompt.substring(0, 50),
-          timestamp: new Date().toISOString(),
-        });
-      } catch (error) {
-        // Log error with full details for debugging
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        const errorStack = error instanceof Error ? error.stack : undefined;
-        // Always log errors in production
-        console.error("[IMAGE SAVE ERROR]", {
-          error: errorMessage,
-          stack: errorStack,
-          userId,
-          prompt: prompt.substring(0, 50),
-          hasBase64: !!firstImage.base64,
-          base64Length: firstImage.base64?.length,
-          timestamp: new Date().toISOString(),
-        });
-      }
-    })
-    .catch((error) => {
-      // Log any promise chain errors
-      // Always log promise chain errors
-      console.error("[IMAGE SAVE PROMISE ERROR]", {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        userId,
-        timestamp: new Date().toISOString(),
-      });
+  // Save image to database - start immediately and await with timeout
+  // This ensures the save is tracked by the execution context in serverless
+  // We use a timeout so it doesn't block the tool response too long
+  const savePromise = saveImage(prompt, firstImage.base64, validMediaType, {
+    tokensCost: 1,
+    userId,
+  }).catch((error) => {
+    // Log error but don't throw - image generation succeeded even if save fails
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error("[IMAGE SAVE ERROR]", {
+      error: errorMessage,
+      stack: errorStack,
+      userId,
+      prompt: prompt.substring(0, 50),
+      hasBase64: !!firstImage.base64,
+      base64Length: firstImage.base64?.length,
+      timestamp: new Date().toISOString(),
     });
+  });
+
+  // Await with timeout - this ensures the promise is part of execution context
+  // but doesn't block indefinitely if save is slow
+  const timeoutPromise = new Promise<void>((resolve) => {
+    setTimeout(() => resolve(), 3000); // 3 second timeout
+  });
+
+  // Race the save against timeout - ensures it starts and is tracked
+  await Promise.race([savePromise, timeoutPromise]);
 
   return imageDataUrl;
 }

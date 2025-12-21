@@ -108,18 +108,12 @@ export function ImageActions({
   return (
     <div className="flex items-center gap-2">
       <OpenInFullscreen
+        tooltipLabel="View In Fullscreen"
         trigger={
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button disabled={isDeleting} size="icon" variant="ghost">
-                <Maximize2 className="size-4" />
-                <span className="sr-only">View In Fullscreen</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>View In Fullscreen</p>
-            </TooltipContent>
-          </Tooltip>
+          <Button disabled={isDeleting} size="icon" variant="ghost">
+            <Maximize2 className="size-4" />
+            <span className="sr-only">View In Fullscreen</span>
+          </Button>
         }
       >
         <Image
