@@ -117,26 +117,36 @@ export async function saveImage(
     imageUrl = await uploadBase64ToBlob(base64, mediaType, imageId);
   } catch (error) {
     console.error("Failed to upload image to blob storage:", error);
+    // Continue without URL - base64 will be stored in database
   }
 
-  const [savedImage] = await db
-    .insert(image)
-    .values({
-      id: imageId,
-      userId: session.user.id,
-      prompt,
-      base64,
-      url: imageUrl,
-      mediaType,
-      tokensUsed: tokensCost,
-    })
-    .returning();
+  try {
+    const [savedImage] = await db
+      .insert(image)
+      .values({
+        id: imageId,
+        userId: session.user.id,
+        prompt,
+        base64,
+        url: imageUrl,
+        mediaType,
+        tokensUsed: tokensCost,
+      })
+      .returning();
 
-  invalidateUserImageCountCache(session.user.id);
-  invalidateUserImagesCache(session.user.id);
-  revalidatePath("/images");
+    // Invalidate caches and revalidate paths
+    invalidateUserImageCountCache(session.user.id);
+    invalidateUserImagesCache(session.user.id);
+    revalidatePath("/images", "page");
+    revalidatePath("/images", "layout");
 
-  return { id: savedImage.id };
+    return { id: savedImage.id };
+  } catch (error) {
+    console.error("Failed to save image to database:", error);
+    throw new Error(
+      `Failed to save image: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
 }
 
 export async function deleteImage(imageId: string) {

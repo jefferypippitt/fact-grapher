@@ -53,6 +53,92 @@ function determineThinkingLevel(prompt: string): "low" | "high" {
   return isComplex ? "high" : "low";
 }
 
+function buildImagePrompt(prompt: string, style?: string): string {
+  const requirements = `CRITICAL REQUIREMENTS - Use REAL data only (NO placeholder text like "Lorem ipsum"):
+- Include actual dates, years, and time periods
+- Use real names of people, places, organizations, and events
+- Include specific numbers, statistics, percentages, and quantities
+- Display factual information, verified data, and accurate details
+- All text labels must be meaningful and factual
+- NO placeholder text, NO "Lorem ipsum", NO generic filler content
+- Every number, date, name, and fact must be real and accurate
+
+Make the infographic visually clear and informative with real-world information.`;
+
+  if (style) {
+    return `Create a ${style} infographic about: ${prompt}
+
+${requirements}`;
+  }
+
+  return `Create an informative infographic about: ${prompt}
+
+${requirements}`;
+}
+
+async function generateAndSaveImage(
+  prompt: string,
+  style: string | undefined
+): Promise<string> {
+  const apiKey = process.env.AI_GATEWAY_API_KEY;
+
+  if (!apiKey) {
+    throw new Error(
+      "No AI Gateway API key configured. Please add AI_GATEWAY_API_KEY to environment variables."
+    );
+  }
+
+  if (!prompt?.trim()) {
+    throw new Error("Prompt is required");
+  }
+
+  const gateway = createGateway({
+    apiKey,
+  });
+
+  const imageModel = gateway("google/gemini-3-pro-image");
+  const imagePrompt = buildImagePrompt(prompt, style);
+
+  const imageResult = await generateText({
+    model: imageModel,
+    prompt: imagePrompt,
+    providerOptions: {
+      google: {
+        responseModalities: ["IMAGE"],
+        imageConfig: {
+          aspectRatio: "1:1",
+        },
+      },
+    },
+  });
+
+  const imageFiles =
+    imageResult.files?.filter((f) => f.mediaType?.startsWith("image/")) || [];
+
+  if (imageFiles.length === 0) {
+    throw new Error("No image generated - The model did not return any images");
+  }
+
+  const firstImage = imageFiles[0];
+  const mediaType = firstImage.mediaType || "image/png";
+
+  if (!firstImage.base64) {
+    throw new Error(
+      "No base64 data in generated image - The model did not return image data"
+    );
+  }
+
+  // Save image to database (non-blocking - don't fail if save fails)
+  try {
+    await saveImage(prompt, firstImage.base64, mediaType, 1);
+  } catch (error) {
+    console.error("Failed to save image to database:", error);
+    // Continue - still return the image data URL so it displays in the chatbot
+  }
+
+  return `data:${mediaType};base64,${firstImage.base64}`;
+}
+
 export async function POST(req: Request) {
   const {
     messages,
@@ -143,79 +229,7 @@ export async function POST(req: Request) {
           throw new Error("Unauthorized");
         }
 
-        const apiKey = process.env.AI_GATEWAY_API_KEY;
-
-        if (!apiKey) {
-          throw new Error(
-            "No AI Gateway API key configured. Please add AI_GATEWAY_API_KEY to environment variables."
-          );
-        }
-
-        if (!prompt?.trim()) {
-          throw new Error("Prompt is required");
-        }
-
-        const gateway = createGateway({
-          apiKey,
-        });
-
-        const imageModel = gateway("google/gemini-3-pro-image");
-
-        const imagePrompt = infographicStyle
-          ? `Create a ${infographicStyle} infographic about: ${prompt}
-
-CRITICAL REQUIREMENTS - Use REAL data only (NO placeholder text like "Lorem ipsum"):
-- Include actual dates, years, and time periods
-- Use real names of people, places, organizations, and events
-- Include specific numbers, statistics, percentages, and quantities
-- Display factual information, verified data, and accurate details
-- All text labels must be meaningful and factual
-- NO placeholder text, NO "Lorem ipsum", NO generic filler content
-- Every number, date, name, and fact must be real and accurate
-
-Make the infographic visually clear and informative with real-world information.`
-          : `Create an informative infographic about: ${prompt}
-
-CRITICAL REQUIREMENTS - Use REAL data only (NO placeholder text like "Lorem ipsum"):
-- Include actual dates, years, and time periods
-- Use real names of people, places, organizations, and events
-- Include specific numbers, statistics, percentages, and quantities
-- Display factual information, verified data, and accurate details
-- All text labels must be meaningful and factual
-- NO placeholder text, NO "Lorem ipsum", NO generic filler content
-- Every number, date, name, and fact must be real and accurate
-
-Make the infographic visually clear and informative with real-world information.`;
-
-        const imageResult = await generateText({
-          model: imageModel,
-          prompt: imagePrompt,
-          providerOptions: {
-            google: {
-              responseModalities: ["IMAGE"],
-              imageConfig: {
-                aspectRatio: "1:1",
-              },
-            },
-          },
-        });
-
-        const imageFiles =
-          imageResult.files?.filter((f) => f.mediaType?.startsWith("image/")) ||
-          [];
-
-        if (imageFiles.length === 0) {
-          throw new Error(
-            "No image generated - The model did not return any images"
-          );
-        }
-
-        const firstImage = imageFiles[0];
-        const mediaType = firstImage.mediaType || "image/png";
-
-        await saveImage(prompt, firstImage.base64, mediaType, 1);
-
-        return `data:${mediaType};base64,${firstImage.base64}`;
+        return await generateAndSaveImage(prompt, infographicStyle);
       },
       toModelOutput: () => ({
         type: "content",
