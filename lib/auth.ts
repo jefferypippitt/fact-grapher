@@ -45,19 +45,19 @@ export const auth = betterAuth({
         checkout({
           products: [
             {
-              productId: "50f840ad-1c0a-4abb-8299-da42bd0efcb4",
+              productId: "0d8672dd-3e65-4040-9367-661502ad38a7",
               slug: "intro",
             },
             {
-              productId: "142aec44-e133-470a-a974-4bad5fd2e3b5",
+              productId: "57b45a66-8a91-48e8-90fe-c704d0e48859",
               slug: "bronze",
             },
             {
-              productId: "11214f6f-6306-479a-a39c-2889ad238791",
+              productId: "7fcbe7f1-6b47-4efa-acd9-04c9e3c3b5f4",
               slug: "silver",
             },
             {
-              productId: "993054d0-69a6-4b76-a71f-a45489049be2",
+              productId: "06642b89-e72f-4613-afa7-ad8bee30761f",
               slug: "gold",
             },
           ],

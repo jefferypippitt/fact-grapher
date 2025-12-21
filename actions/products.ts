@@ -7,28 +7,28 @@ import { products } from "@/db/schema";
 export async function seedProducts() {
   const productData = [
     {
-      polarProductId: "50f840ad-1c0a-4abb-8299-da42bd0efcb4",
+      polarProductId: "0d8672dd-3e65-4040-9367-661502ad38a7",
       name: "Intro",
       slug: "intro",
       price: 3,
       tokenAmount: 1,
     },
     {
-      polarProductId: "142aec44-e133-470a-a974-4bad5fd2e3b5",
+      polarProductId: "57b45a66-8a91-48e8-90fe-c704d0e48859",
       name: "Bronze",
       slug: "bronze",
       price: 15,
       tokenAmount: 5,
     },
     {
-      polarProductId: "11214f6f-6306-479a-a39c-2889ad238791",
+      polarProductId: "7fcbe7f1-6b47-4efa-acd9-04c9e3c3b5f4",
       name: "Silver",
       slug: "silver",
       price: 30,
       tokenAmount: 10,
     },
     {
-      polarProductId: "993054d0-69a6-4b76-a71f-a45489049be2",
+      polarProductId: "06642b89-e72f-4613-afa7-ad8bee30761f",
       name: "Gold",
       slug: "gold",
       price: 60,
