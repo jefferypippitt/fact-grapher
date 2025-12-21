@@ -15,10 +15,10 @@ import {
 } from "@/components/ui/card";
 
 const PRODUCTS = [
-  { slug: "intro" as const, name: "Intro", tokens: 1 },
-  { slug: "bronze" as const, name: "Bronze", tokens: 5 },
-  { slug: "silver" as const, name: "Silver", tokens: 10 },
-  { slug: "gold" as const, name: "Gold", tokens: 20 },
+  { slug: "intro" as const, name: "Intro", tokens: 1, price: 3 },
+  { slug: "bronze" as const, name: "Bronze", tokens: 5, price: 15 },
+  { slug: "silver" as const, name: "Silver", tokens: 10, price: 30 },
+  { slug: "gold" as const, name: "Gold", tokens: 20, price: 60 },
 ] as const;
 
 export default function PricingCards() {
@@ -73,6 +73,10 @@ export default function PricingCards() {
         >
           <CardHeader>
             <CardTitle className="text-2xl">{product.name}</CardTitle>
+            <div className="flex items-baseline gap-2">
+              <span className="font-bold text-3xl">${product.price}</span>
+              <span className="text-muted-foreground">USD</span>
+            </div>
             <CardDescription>
               {product.tokens} {product.tokens === 1 ? "token" : "tokens"}
             </CardDescription>

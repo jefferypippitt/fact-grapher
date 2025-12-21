@@ -33,8 +33,8 @@ export function DiveDeeper() {
   return (
     <section className="py-8">
       <div className="max-w-4xl">
-        <h2 className="mb-6 text-left font-semibold text-3xl">
-          Frequently Asked Questions
+        <h2 className="mb-6 text-left font-semibold text-3xl md:text-4xl">
+          Frequently Asked <span className="text-primary">Questions</span>
         </h2>
         <Accordion className="w-full" collapsible type="single">
           {faqs.map((faq) => (

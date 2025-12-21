@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { FeatureCard } from "@/components/feature-card";
 
@@ -70,17 +70,27 @@ export function HeroSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  if (audioRef.current === null && typeof window !== "undefined") {
-    audioRef.current = new Audio("/paper-slide.mp3");
-    audioRef.current.volume = 0.3;
-    audioRef.current.preload = "auto";
-  }
+  useEffect(() => {
+    if (typeof window !== "undefined" && audioRef.current === null) {
+      audioRef.current = new Audio("/paper-slide.mp3");
+      audioRef.current.volume = 0.3;
+      audioRef.current.preload = "auto";
+    }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   const playHoverSound = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
+      // Silently handle playback errors (browsers may block autoplay)
       audioRef.current.play().catch(() => {
-        console.error("Error playing hover sound");
+        // Audio playback failed - likely due to browser autoplay policy
       });
     }
   };
@@ -147,7 +157,8 @@ export function HeroSection() {
           transition={{ delay: 0.8, duration: 0.6 }}
         >
           <p className="font-medium text-foreground text-lg sm:text-xl">
-            AI-powered infographics in seconds.
+            <span className="text-primary">AI-powered</span> infographics in
+            seconds.
           </p>
         </motion.div>
       </div>

@@ -6,18 +6,18 @@ import { HowItWorks } from "@/components/how-it-works";
 
 export default function Home() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-16 md:space-y-20">
       <HeroSection />
-      <section>
+      <section className="scroll-mt-8">
         <HowItWorks />
       </section>
-      <section>
+      <section className="scroll-mt-8">
         <AdditionalFeatures />
       </section>
-      <section>
+      <section className="scroll-mt-8">
         <DiveDeeper />
       </section>
-      <section>
+      <section className="scroll-mt-8">
         <CtaSection />
       </section>
     </div>

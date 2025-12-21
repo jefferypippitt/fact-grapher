@@ -205,7 +205,7 @@ export default function Header({
                 alt="Fact Grapher"
                 className="h-8 w-auto"
                 height={50}
-                src="/X-Pro-Fact-Grapher-Logo.jpg"
+                src="/FG-logo.png"
                 width={50}
               />
               <span className="flex items-center gap-1 text-[16px] tracking-[-1px] transition-opacity duration-300 group-hover:opacity-65">
@@ -254,7 +254,7 @@ export default function Header({
               alt="Fact Grapher"
               className="size-8 w-auto"
               height={50}
-              src="/X-Pro-Fact-Grapher-Logo.jpg"
+              src="/FG-logo.png"
               width={50}
             />
             <span className="flex items-center gap-1 text-[16px] tracking-[-1px] transition-opacity duration-300 group-hover:opacity-65">

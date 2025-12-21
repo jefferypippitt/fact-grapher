@@ -24,7 +24,7 @@ export function AppSidebar() {
               alt="Fact Grapher"
               className="size-8 rounded-lg object-contain"
               height={32}
-              src="/X-Pro-Fact-Grapher-Logo.jpg"
+              src="/FG-logo.png"
               width={32}
             />
             <div className="flex flex-col gap-0.5 leading-none">
