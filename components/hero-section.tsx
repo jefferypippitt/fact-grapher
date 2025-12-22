@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 import { FeatureCard } from "@/components/feature-card";
-import { WatchHowItWorksButton } from "@/components/youtube-demo";
+import { YoutubeDemo } from "@/components/youtube-demo";
 
 const gallery = [
   {
@@ -51,45 +51,54 @@ const gallery = [
 
 const CARDS_PER_PAGE = 5;
 
-const seededRandom = (seed: number) => {
-  const x = Math.sin(seed * 12.9898) * 43_758.5453;
-  return x - Math.floor(x);
+const getInitialPosition = (
+  index: number,
+  imageSize: number,
+  direction: "left-to-right" | "right-to-left"
+) => {
+  if (direction === "left-to-right") {
+    // Cards start from the left side and move right
+    const startX = -400; // Start off-screen to the left
+    const offsetX = index * 20; // Slight stagger
+    return {
+      x: startX + offsetX - imageSize / 2,
+      y: -imageSize / 2,
+      rotation: -15 + index * 3, // Slight rotation variation
+    };
+  }
+  // Cards start from the right side and move left
+  const startX = 400; // Start off-screen to the right
+  const offsetX = index * 20; // Slight stagger
+  return {
+    x: startX - offsetX - imageSize / 2,
+    y: -imageSize / 2,
+    rotation: 15 - index * 3, // Slight rotation variation
+  };
 };
 
-const getInitialPosition = (
+const getFinalPosition = (
   index: number,
   imageSize: number,
   totalCards: number
 ) => {
-  const angle = (index / totalCards) * Math.PI * 2;
-  const seed1 = index * 0.1;
-  const seed2 = index * 0.2;
-  const seed3 = index * 0.3;
-  const radius = 300 + seededRandom(seed1) * 150;
-  const x = Math.cos(angle) * radius + (seededRandom(seed2) - 0.5) * 200;
-  const y = Math.sin(angle) * radius + (seededRandom(seed3) - 0.5) * 200;
-  return {
-    x: x - imageSize / 2,
-    y: y - imageSize / 2,
-    rotation: (seededRandom(seed1 + seed2) - 0.5) * 45,
-  };
-};
-
-const getFinalPosition = (index: number, imageSize: number) => {
-  const centerIndex = 2;
+  const centerIndex = Math.floor(totalCards / 2);
   const offsetFromCenter = index - centerIndex;
-  const baseX = offsetFromCenter * 80;
 
-  const archHeight = 60;
+  // Ribbon spread: cards fan out in an arc with generous spacing to prevent overlap
+  const spreadDistance = offsetFromCenter * 140; // Increased spacing to prevent overlap
+  const archHeight = 35; // Reduced arch height for flatter, more accessible spread
   const baseY = (offsetFromCenter * offsetFromCenter * archHeight) / 4;
 
-  const rotation = offsetFromCenter * 8;
+  // Rotation increases as cards spread outward
+  const rotation = offsetFromCenter * 7; // Reduced rotation for cleaner look
 
+  // Higher index values are on top (1 over 0, 2 over 1, 3 over 2, etc.)
+  // This ensures cards on the right are above cards on the left for easy sequential hovering
   return {
-    x: baseX - imageSize / 2,
+    x: spreadDistance - imageSize / 2,
     y: baseY - imageSize / 2,
     rotation,
-    zIndex: 10 - Math.abs(offsetFromCenter),
+    zIndex: 10 + index, // Higher index = higher z-index, so cards stack left to right
   };
 };
 
@@ -98,6 +107,9 @@ export function HeroSection() {
   const [currentPage, setCurrentPage] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState<
+    "left-to-right" | "right-to-left"
+  >("left-to-right");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const totalPages = Math.ceil(gallery.length / CARDS_PER_PAGE);
@@ -150,8 +162,12 @@ export function HeroSection() {
       <div className="-mt-4 relative h-[400px] w-full max-w-4xl overflow-visible px-4 sm:h-[400px]">
         {currentGallery.map((item, index) => {
           const imageSize = 200;
-          const initial = getInitialPosition(index, imageSize, CARDS_PER_PAGE);
-          const final = getFinalPosition(index, imageSize);
+          const initial = getInitialPosition(
+            index,
+            imageSize,
+            animationDirection
+          );
+          const final = getFinalPosition(index, imageSize, CARDS_PER_PAGE);
           const isHovered = hoveredIndex === index;
 
           return (
@@ -193,11 +209,14 @@ export function HeroSection() {
                 pointerEvents: isTransitioning ? "none" : "auto",
               }}
               transition={{
-                duration: 1.2,
-                delay: index * 0.1,
+                duration: 0.7,
+                delay:
+                  animationDirection === "right-to-left"
+                    ? (CARDS_PER_PAGE - 1 - index) * 0.05
+                    : index * 0.05,
                 ease: [0.33, 1, 0.68, 1],
                 scale: {
-                  duration: 0.3,
+                  duration: 0.2,
                   ease: [0.4, 0, 0.2, 1],
                 },
               }}
@@ -227,12 +246,20 @@ export function HeroSection() {
                   setHoveredIndex(null);
                   setHasAnimated(true);
                   setIsTransitioning(true);
+
+                  // Determine direction: forward (higher page) = right-to-left, backward = left-to-right
+                  const direction =
+                    pageNumber > currentPage
+                      ? "right-to-left"
+                      : "left-to-right";
+                  setAnimationDirection(direction);
+
                   setCurrentPage(pageNumber);
                   // Re-enable hover sounds after animation completes
-                  // Account for max delay (last card: 0.4s) + duration (1.2s) = 1.6s
+                  // Account for max delay (last card: 0.2s) + duration (0.7s) = 0.9s
                   setTimeout(() => {
                     setIsTransitioning(false);
-                  }, 1600);
+                  }, 900);
                 }}
                 type="button"
               />
@@ -242,7 +269,7 @@ export function HeroSection() {
       )}
 
       <div className="mt-4">
-        <WatchHowItWorksButton delay={0.4} />
+        <YoutubeDemo delay={0.4} />
       </div>
     </div>
   );

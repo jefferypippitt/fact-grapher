@@ -4,15 +4,15 @@ import { ArrowRight, Rocket } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 
-type WatchHowItWorksButtonProps = {
+type YoutubeDemoProps = {
   href?: string;
   delay?: number;
 };
 
-export function WatchHowItWorksButton({
-  href = "https://youtube.com",
+export function YoutubeDemo({
+  href = "https://youtu.be/vL_NvSo7Lgo",
   delay = 0.4,
-}: WatchHowItWorksButtonProps) {
+}: YoutubeDemoProps) {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
