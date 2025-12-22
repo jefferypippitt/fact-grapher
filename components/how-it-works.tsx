@@ -6,9 +6,7 @@ export function HowItWorks() {
           How <span className="text-primary">Fact Grapher</span> Works
         </h2>
         <p className="mb-8 text-center text-base text-muted-foreground md:text-lg">
-          Quickly turn your ideas into{" "}
-          <span className="font-medium text-primary">captivating images</span>{" "}
-          with ease
+          Quickly turn your ideas into captivating images with ease
         </p>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border bg-card p-5 text-left shadow-sm transition-shadow hover:shadow-md">

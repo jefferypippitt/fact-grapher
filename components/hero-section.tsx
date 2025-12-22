@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 import { FeatureCard } from "@/components/feature-card";
+import { WatchHowItWorksButton } from "@/components/youtube-demo";
 
 const gallery = [
   {
@@ -26,15 +27,41 @@ const gallery = [
     alt: "Infographic of the coffee bean lifecycle",
     src: "/infographic-coffee-bean-lifecycle.png",
   },
+  {
+    alt: "Infographic of the animal kingdom",
+    src: "/infographic-animal-kingdom.png",
+  },
+  {
+    alt: "Infographic about Bitcoin",
+    src: "/infographic-bitcoin.png",
+  },
+  {
+    alt: "Infographic of human population",
+    src: "/infographic-human-population.png",
+  },
+  {
+    alt: "Infographic comparing Nvidia vs Intel",
+    src: "/infographic-nvidia-vs-intel.png",
+  },
+  {
+    alt: "Infographic about World War 3",
+    src: "/infographic-ww3.png",
+  },
 ];
+
+const CARDS_PER_PAGE = 5;
 
 const seededRandom = (seed: number) => {
   const x = Math.sin(seed * 12.9898) * 43_758.5453;
   return x - Math.floor(x);
 };
 
-const getInitialPosition = (index: number, imageSize: number) => {
-  const angle = (index / gallery.length) * Math.PI * 2;
+const getInitialPosition = (
+  index: number,
+  imageSize: number,
+  totalCards: number
+) => {
+  const angle = (index / totalCards) * Math.PI * 2;
   const seed1 = index * 0.1;
   const seed2 = index * 0.2;
   const seed3 = index * 0.3;
@@ -68,7 +95,15 @@ const getFinalPosition = (index: number, imageSize: number) => {
 
 export function HeroSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const totalPages = Math.ceil(gallery.length / CARDS_PER_PAGE);
+  const startIndex = currentPage * CARDS_PER_PAGE;
+  const endIndex = startIndex + CARDS_PER_PAGE;
+  const currentGallery = gallery.slice(startIndex, endIndex);
 
   useEffect(() => {
     if (typeof window !== "undefined" && audioRef.current === null) {
@@ -86,82 +121,129 @@ export function HeroSection() {
   }, []);
 
   const playHoverSound = () => {
+    // Don't play sound during page transitions
+    if (isTransitioning) {
+      return;
+    }
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      // Silently handle playback errors (browsers may block autoplay)
       audioRef.current.play().catch(() => {
-        // Audio playback failed - likely due to browser autoplay policy
+        // Silently handle playback errors (browsers may block autoplay)
       });
     }
   };
 
   return (
-    <section className="flex items-center justify-center py-6">
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-12 px-4">
-        <div className="relative h-[400px] w-full max-w-4xl overflow-visible sm:h-[420px]">
-          {gallery.map((item, index) => {
-            const imageSize = 200;
-            const initial = getInitialPosition(index, imageSize);
-            const final = getFinalPosition(index, imageSize);
-            const isHovered = hoveredIndex === index;
+    <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-4">
+      <motion.div
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center"
+        initial={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.6 }}
+      >
+        <h1 className="font-semibold text-2xl text-foreground md:text-3xl">
+          <span className="text-primary">AI-Powered</span> Infographics In
+          Seconds
+        </h1>
+      </motion.div>
 
+      <div className="-mt-4 relative h-[400px] w-full max-w-4xl overflow-visible px-4 sm:h-[400px]">
+        {currentGallery.map((item, index) => {
+          const imageSize = 200;
+          const initial = getInitialPosition(index, imageSize, CARDS_PER_PAGE);
+          const final = getFinalPosition(index, imageSize);
+          const isHovered = hoveredIndex === index;
+
+          return (
+            <motion.div
+              animate={{
+                x: final.x,
+                y: final.y,
+                rotate: final.rotation,
+                scale: isHovered ? 1.05 : 1,
+                opacity: 1,
+                zIndex: isHovered ? 20 : final.zIndex,
+              }}
+              className="absolute top-1/2 left-1/2 h-[200px] w-[200px] cursor-pointer overflow-hidden rounded-xl shadow-lg transition-shadow sm:h-[240px] sm:w-[240px]"
+              initial={
+                hasAnimated
+                  ? {
+                      x: initial.x,
+                      y: initial.y,
+                      rotate: initial.rotation,
+                      scale: 0.8,
+                      opacity: 0,
+                    }
+                  : {
+                      x: final.x,
+                      y: final.y,
+                      rotate: final.rotation,
+                      scale: 1,
+                      opacity: 1,
+                    }
+              }
+              key={`${item.src}-page-${currentPage}-idx-${index}`}
+              onHoverEnd={() => setHoveredIndex(null)}
+              onHoverStart={() => {
+                setHoveredIndex(index);
+                playHoverSound();
+              }}
+              style={{
+                transformOrigin: "center center",
+                pointerEvents: isTransitioning ? "none" : "auto",
+              }}
+              transition={{
+                duration: 1.2,
+                delay: index * 0.1,
+                ease: [0.33, 1, 0.68, 1],
+                scale: {
+                  duration: 0.3,
+                  ease: [0.4, 0, 0.2, 1],
+                },
+              }}
+            >
+              <div className="relative h-full w-full">
+                <FeatureCard imageAlt={item.alt} imageSrc={item.src} />
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center gap-2">
+          {Array.from({ length: totalPages }, (_, pageIndex) => {
+            const pageNumber = pageIndex;
             return (
-              <motion.div
-                animate={{
-                  x: final.x,
-                  y: final.y,
-                  rotate: final.rotation,
-                  scale: isHovered ? 1.05 : 1,
-                  opacity: 1,
-                  zIndex: isHovered ? 20 : final.zIndex,
+              <button
+                aria-label={`Go to page ${pageNumber + 1}`}
+                className={`h-2 rounded-full transition-all ${
+                  currentPage === pageNumber
+                    ? "w-8 bg-primary"
+                    : "w-2 bg-muted hover:bg-muted-foreground/50"
+                }`}
+                key={`pagination-dot-page-${pageNumber}`}
+                onClick={() => {
+                  setHoveredIndex(null);
+                  setHasAnimated(true);
+                  setIsTransitioning(true);
+                  setCurrentPage(pageNumber);
+                  // Re-enable hover sounds after animation completes
+                  // Account for max delay (last card: 0.4s) + duration (1.2s) = 1.6s
+                  setTimeout(() => {
+                    setIsTransitioning(false);
+                  }, 1600);
                 }}
-                className="absolute top-1/2 left-1/2 h-[200px] w-[200px] cursor-pointer overflow-hidden rounded-xl shadow-lg transition-shadow sm:h-[240px] sm:w-[240px]"
-                initial={{
-                  x: initial.x,
-                  y: initial.y,
-                  rotate: initial.rotation,
-                  scale: 0.8,
-                  opacity: 0,
-                }}
-                key={`${item.src}-${index}`}
-                onHoverEnd={() => setHoveredIndex(null)}
-                onHoverStart={() => {
-                  setHoveredIndex(index);
-                  playHoverSound();
-                }}
-                style={{
-                  transformOrigin: "center center",
-                }}
-                transition={{
-                  duration: 1.2,
-                  delay: index * 0.1,
-                  ease: [0.33, 1, 0.68, 1],
-                  scale: {
-                    duration: 0.3,
-                    ease: [0.4, 0, 0.2, 1],
-                  },
-                }}
-              >
-                <div className="relative h-full w-full">
-                  <FeatureCard imageAlt={item.alt} imageSrc={item.src} />
-                </div>
-              </motion.div>
+                type="button"
+              />
             );
           })}
         </div>
+      )}
 
-        <motion.div
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-          initial={{ opacity: 0, y: 20 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-        >
-          <p className="font-medium text-foreground text-lg sm:text-xl">
-            <span className="text-primary">AI-powered</span> infographics in
-            seconds.
-          </p>
-        </motion.div>
+      <div className="mt-4">
+        <WatchHowItWorksButton delay={0.4} />
       </div>
-    </section>
+    </div>
   );
 }

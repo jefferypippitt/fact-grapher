@@ -6,7 +6,7 @@ import { HowItWorks } from "@/components/how-it-works";
 
 export default function Home() {
   return (
-    <div className="space-y-16 md:space-y-20">
+    <div className="space-y-10 md:space-y-16">
       <HeroSection />
       <section className="scroll-mt-8">
         <HowItWorks />
