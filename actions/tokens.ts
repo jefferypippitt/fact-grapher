@@ -156,6 +156,9 @@ export async function deductTokens(userId: string, amount: number) {
 
   await refreshUserTokens(userId);
 
+  revalidatePath("/dashboard");
+  revalidatePath("/", "layout");
+
   return tokenSpend;
 }
 

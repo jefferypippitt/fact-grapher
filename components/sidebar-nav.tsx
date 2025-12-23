@@ -2,7 +2,8 @@
 
 import { Home, Image, ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -32,6 +33,20 @@ const navItems = [
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Listen for custom events from chatbot when tokens are updated
+    const handleTokensUpdated = () => {
+      router.refresh();
+    };
+
+    window.addEventListener("tokens-updated", handleTokensUpdated);
+
+    return () => {
+      window.removeEventListener("tokens-updated", handleTokensUpdated);
+    };
+  }, [router]);
 
   return (
     <SidebarGroup>
