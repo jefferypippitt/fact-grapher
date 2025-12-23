@@ -2,11 +2,12 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { CopyIcon } from "lucide-react";
+import { AlertCircle, CopyIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { getUserTokens } from "@/actions/tokens";
 import {
   Conversation,
   ConversationAutoScroll,
@@ -43,6 +44,8 @@ import {
 } from "@/components/ai-elements/sources";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { StyleDetails } from "@/components/style-details";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 const suggestions = [
   "How to make an omlete",
@@ -221,10 +224,45 @@ const infographicStyles = [
   "Hierarchical infographics",
 ];
 
-export default function AIChat() {
+export default function AIChat({
+  initialTokenCount = 0,
+}: {
+  initialTokenCount?: number;
+}) {
   const router = useRouter();
   const [input, setInput] = useState("");
   const [style, setStyle] = useState<string>("");
+  const [tokenCount, setTokenCount] = useState(initialTokenCount);
+  const hasTokens = tokenCount > 0;
+
+  useEffect(() => {
+    const updateTokenCount = async () => {
+      try {
+        const updatedTokens = await getUserTokens();
+        setTokenCount(updatedTokens);
+      } catch {
+        console.error("Failed to update token count");
+      }
+    };
+
+    // Listen for custom events from other components (e.g., after purchase)
+    const handleTokensUpdated = () => {
+      updateTokenCount();
+    };
+
+    // Update when window regains focus (user may have purchased tokens in another tab)
+    const handleFocus = () => {
+      updateTokenCount();
+    };
+
+    window.addEventListener("tokens-updated", handleTokensUpdated);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("tokens-updated", handleTokensUpdated);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
@@ -238,20 +276,30 @@ export default function AIChat() {
         errorMessage.toLowerCase().includes("insufficient tokens") ||
         errorMessage.toLowerCase().includes("don't have enough tokens")
       ) {
+        getUserTokens()
+          .then(setTokenCount)
+          .catch(() => {
+            // Silently fail
+          });
+
         toast.error("You need tokens to use the chatbot.", {
           action: {
             label: "Buy Tokens",
-            onClick: () => router.push("/dashboard/buytoken"),
+            onClick: () => router.push("/pricing"),
           },
         });
-        // Refresh to update UI even on error
-        router.refresh();
       } else {
         toast.error(errorMessage);
       }
     },
-    onFinish: () => {
-      router.refresh();
+    onFinish: async () => {
+      // Update token count after message completes
+      try {
+        const updatedTokens = await getUserTokens();
+        setTokenCount(updatedTokens);
+      } catch {
+        // Silently fail
+      }
       window.dispatchEvent(new CustomEvent("tokens-updated"));
     },
   });
@@ -261,7 +309,15 @@ export default function AIChat() {
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
-    if (!message.text.trim()) {
+    if (!(message.text.trim() && hasTokens)) {
+      if (!hasTokens) {
+        toast.error("You need tokens to generate infographics.", {
+          action: {
+            label: "Buy Tokens",
+            onClick: () => router.push("/pricing"),
+          },
+        });
+      }
       return;
     }
 
@@ -278,6 +334,16 @@ export default function AIChat() {
   };
 
   const handleSuggestionClick = (suggestion: string) => {
+    if (!hasTokens) {
+      toast.error("You need tokens to generate infographics.", {
+        action: {
+          label: "Buy Tokens",
+          onClick: () => router.push("/pricing"),
+        },
+      });
+      return;
+    }
+
     sendMessage(
       { text: suggestion },
       {
@@ -297,6 +363,8 @@ export default function AIChat() {
       toast.error("Failed to copy to clipboard");
     }
   };
+
+  const isInputDisabled = !(input.trim() && hasTokens);
 
   return (
     <div className="relative mx-auto size-full h-screen max-h-[800px] max-w-5xl p-6">
@@ -463,9 +531,30 @@ export default function AIChat() {
         </Conversation>
 
         <div className="mt-4 flex flex-col gap-4">
+          {!hasTokens && (
+            <Alert className="border-yellow-500/50 bg-yellow-500/10">
+              <AlertCircle className="size-4 text-yellow-500" />
+              <AlertTitle className="text-yellow-500">
+                No Tokens Remaining
+              </AlertTitle>
+              <AlertDescription className="text-yellow-500/90">
+                Purchase more to generate new infographics.
+              </AlertDescription>
+              <div className="mt-3">
+                <Button
+                  onClick={() => router.push("/pricing")}
+                  size="sm"
+                  variant="default"
+                >
+                  Buy Tokens
+                </Button>
+              </div>
+            </Alert>
+          )}
           <Suggestions className="mt-4">
             {suggestions.map((suggestion) => (
               <Suggestion
+                disabled={!hasTokens}
                 key={suggestion}
                 onClick={handleSuggestionClick}
                 suggestion={suggestion}
@@ -474,12 +563,19 @@ export default function AIChat() {
           </Suggestions>
           <PromptInput onSubmit={handleSubmit}>
             <PromptInputTextarea
+              disabled={!hasTokens}
               onChange={(e) => setInput(e.target.value)}
+              placeholder={
+                hasTokens
+                  ? "What would you like to know?"
+                  : "Purchase tokens to generate infographics"
+              }
               value={input}
             />
             <PromptInputFooter>
               <PromptInputTools>
                 <PromptInputSelect
+                  disabled={!hasTokens}
                   onValueChange={(value) => {
                     setStyle(value);
                   }}
@@ -500,7 +596,7 @@ export default function AIChat() {
                   </PromptInputSelectContent>
                 </PromptInputSelect>
               </PromptInputTools>
-              <PromptInputSubmit disabled={!input} status={status} />
+              <PromptInputSubmit disabled={isInputDisabled} status={status} />
             </PromptInputFooter>
           </PromptInput>
 

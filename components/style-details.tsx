@@ -197,7 +197,7 @@ export function StyleDetails() {
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {styleExamples[selectedStyle]?.map((example) => (
-                      <Badge key={example} variant="outline">
+                      <Badge key={example} variant="default">
                         {example}
                       </Badge>
                     ))}

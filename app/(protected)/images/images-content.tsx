@@ -132,7 +132,7 @@ export async function ImagesContent({
                 />
               </ItemMedia>
               <ItemContent className="gap-1">
-                <ItemTitle className="line-clamp-2">{image.prompt}</ItemTitle>
+                <ItemTitle>{image.prompt}</ItemTitle>
                 <ItemDescription>
                   Created: <Badge>{formatDate(image.createdAt)}</Badge>
                 </ItemDescription>

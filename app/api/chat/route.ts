@@ -70,20 +70,6 @@ function validateImageDataUrl(
   }
 }
 
-function logImageGeneration(imageDataUrl: string, userId: string) {
-  if (
-    process.env.NODE_ENV === "development" ||
-    process.env.LOG_IMAGE_GENERATION
-  ) {
-    console.log("Tool generateImage returning:", {
-      hasDataUrl: !!imageDataUrl,
-      dataUrlStartsWith: imageDataUrl.substring(0, 30),
-      dataUrlLength: imageDataUrl.length,
-      userId,
-    });
-  }
-}
-
 function logImageGenerationError(
   error: unknown,
   userId: string,
@@ -184,19 +170,6 @@ async function generateAndSaveImage(
 
   // Construct the data URL first to ensure we always return it
   const imageDataUrl = `data:${validMediaType};base64,${firstImage.base64}`;
-
-  // Log for debugging (only in development or when explicitly enabled)
-  if (
-    process.env.NODE_ENV === "development" ||
-    process.env.LOG_IMAGE_GENERATION
-  ) {
-    console.log("Generated image data URL:", {
-      mediaType: validMediaType,
-      base64Length: firstImage.base64.length,
-      dataUrlPrefix: imageDataUrl.substring(0, 50),
-      userId,
-    });
-  }
 
   // Save image to database - start immediately and await with timeout
   // This ensures the save is tracked by the execution context in serverless
@@ -359,7 +332,6 @@ export async function POST(req: Request) {
           );
 
           validateImageDataUrl(imageDataUrl);
-          logImageGeneration(imageDataUrl, session.user.id);
 
           return imageDataUrl;
         } catch (error) {
@@ -397,19 +369,8 @@ export async function POST(req: Request) {
         },
       },
     },
-    onFinish: (result) => {
-      // Log completion for debugging
-      if (
-        process.env.NODE_ENV === "development" ||
-        process.env.LOG_IMAGE_GENERATION
-      ) {
-        console.log("Stream finished:", {
-          userId: session.user.id,
-          textLength: result.text?.length ?? 0,
-          toolCalls: result.toolCalls?.length ?? 0,
-          finishReason: result.finishReason,
-        });
-      }
+    onFinish: () => {
+      // Stream completion handled silently
     },
   });
 
