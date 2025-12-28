@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 import { FeatureCard } from "@/components/feature-card";
-import { YoutubeDemo } from "@/components/youtube-demo";
+import YoutubeDemo from "@/components/youtube-demo";
 
 const gallery = [
   {
@@ -102,7 +102,7 @@ const getFinalPosition = (
   };
 };
 
-export function HeroSection() {
+export default function HeroSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -147,17 +147,12 @@ export function HeroSection() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-4">
-      <motion.div
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-        initial={{ opacity: 0, y: 20 }}
-        transition={{ duration: 0.6 }}
-      >
+      <div className="text-center">
         <h1 className="font-semibold text-2xl text-foreground md:text-3xl">
           <span className="text-primary">AI-Powered</span> Infographics In
           Seconds
         </h1>
-      </motion.div>
+      </div>
 
       <div className="-mt-4 relative h-[400px] w-full max-w-4xl overflow-visible px-4 sm:h-[400px]">
         {currentGallery.map((item, index) => {
@@ -269,7 +264,7 @@ export function HeroSection() {
       )}
 
       <div className="mt-4">
-        <YoutubeDemo delay={0.4} />
+        <YoutubeDemo />
       </div>
     </div>
   );

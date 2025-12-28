@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-export function DiveDeeper() {
+export default function DiveDeeper() {
   const faqs = [
     {
       question: "What do I need to start?",

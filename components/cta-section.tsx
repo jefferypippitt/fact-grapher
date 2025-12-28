@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
-export function CtaSection() {
+export default function CtaSection() {
   return (
     <section className="py-8">
       <div className="max-w-4xl">

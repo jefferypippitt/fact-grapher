@@ -1,8 +1,8 @@
-import { AdditionalFeatures } from "@/components/additional-features";
-import { CtaSection } from "@/components/cta-section";
-import { DiveDeeper } from "@/components/dive-deeper";
-import { HeroSection } from "@/components/hero-section";
-import { HowItWorks } from "@/components/how-it-works";
+import AdditionalFeatures from "@/components/additional-features";
+import CtaSection from "@/components/cta-section";
+import DiveDeeper from "@/components/dive-deeper";
+import HeroSection from "@/components/hero-section";
+import HowItWorks from "@/components/how-it-works";
 
 export default function Home() {
   return (

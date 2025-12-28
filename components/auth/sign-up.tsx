@@ -196,7 +196,37 @@ export default function SignUp() {
                     setLoading(true);
                   },
                   onError: (ctx) => {
-                    toast.error(ctx.error.message);
+                    // Handle Arcjet-specific errors
+                    // Check error code first (more reliable than string matching)
+                    const errorCode = ctx.error?.code;
+                    const errorMessage =
+                      ctx.error?.message ||
+                      ctx.error?.error ||
+                      "An error occurred";
+
+                    if (errorCode === "INVALID_EMAIL") {
+                      // Arcjet email validation error - show the specific message
+                      toast.error(errorMessage);
+                    } else if (
+                      errorCode === "RATE_LIMIT" ||
+                      errorMessage.includes("RATE_LIMIT") ||
+                      errorMessage.includes("rate limit") ||
+                      errorMessage.includes("too many")
+                    ) {
+                      toast.error(
+                        "Too many signup attempts. Please try again later."
+                      );
+                    } else if (
+                      errorCode === "FORBIDDEN" ||
+                      errorMessage.includes("BOT_DETECTED") ||
+                      errorMessage.includes("bot detected")
+                    ) {
+                      toast.error(
+                        "Unable to complete signup. Please contact support if this persists."
+                      );
+                    } else {
+                      toast.error(errorMessage);
+                    }
                   },
                   onSuccess: () => {
                     router.push("/dashboard");

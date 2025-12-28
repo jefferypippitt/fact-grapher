@@ -19,6 +19,8 @@
     "@ai-sdk/gateway": "^2.0.18",
     "@ai-sdk/google": "^2.0.44",
     "@ai-sdk/react": "^2.0.108",
+    "@arcjet/ip": "1.0.0-beta.15",
+    "@arcjet/next": "1.0.0-beta.15",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",
     "@polar-sh/better-auth": "^1.6.1",

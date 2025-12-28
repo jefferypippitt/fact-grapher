@@ -10,9 +10,11 @@ import {
   type UIMessage,
 } from "ai";
 import { headers } from "next/headers";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { saveImage } from "@/actions/images";
 import { deductTokens, getUserTokens } from "@/actions/tokens";
+import { chatAj } from "@/lib/arcjet";
 import { auth } from "@/lib/auth";
 
 // Image generation time varies significantly by topic complexity
@@ -287,6 +289,48 @@ export async function POST(req: Request) {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  // Apply rate limiting and bot protection with actual user ID and IP
+  // Extract IP from headers (similar to how @arcjet/ip does it)
+  const forwarded = req.headers.get("x-forwarded-for");
+  const realIp = req.headers.get("x-real-ip");
+  const cfConnectingIp = req.headers.get("cf-connecting-ip");
+  const requestIp =
+    forwarded?.split(",")[0]?.trim() || realIp || cfConnectingIp || "127.0.0.1";
+
+  const decision = await chatAj.protect(req, {
+    userId: session.user.id,
+    ip: requestIp,
+  });
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return NextResponse.json(
+        {
+          error: "Too many requests. Please slow down.",
+          message:
+            "You're making requests too quickly. Please wait a moment before trying again.",
+        },
+        { status: 429 }
+      );
+    }
+    if (decision.reason.isBot()) {
+      return NextResponse.json(
+        {
+          error: "Bot detected",
+          message: "Bot traffic is not allowed on this endpoint.",
+        },
+        { status: 403 }
+      );
+    }
+    return NextResponse.json(
+      {
+        error: "Access denied",
+        message: "Your request was blocked.",
+      },
+      { status: 403 }
+    );
   }
 
   const userTokens = await getUserTokens();

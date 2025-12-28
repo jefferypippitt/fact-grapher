@@ -195,7 +195,11 @@ export default function Header({
   if (!sessionPromise) {
     return (
       <nav className="sticky top-0 z-50 pt-4">
-        <div className="container max-w-4xl rounded-xl border border-transparent bg-background/80 px-4 py-3 backdrop-blur-xl transition-all duration-200">
+        <div
+          className={`container rounded-xl border border-transparent bg-background/80 px-4 py-3 backdrop-blur-xl transition-all duration-500 ease-in-out ${
+            isScrolled ? "max-w-2xl" : "max-w-4xl"
+          }`}
+        >
           <div className="flex items-center justify-between">
             <Link
               className="group flex items-center gap-2 transition-opacity hover:opacity-80"
@@ -239,10 +243,10 @@ export default function Header({
   return (
     <nav className="sticky top-0 z-50 pt-4">
       <div
-        className={`container max-w-4xl rounded-xl bg-background/80 px-4 py-3 backdrop-blur-xl transition-all duration-200 ${
+        className={`container rounded-xl bg-background/80 px-4 py-3 backdrop-blur-xl transition-all duration-500 ease-in-out ${
           isScrolled
-            ? "border bg-background/95 shadow-sm"
-            : "border border-transparent"
+            ? "max-w-2xl border bg-background/95 shadow-sm"
+            : "max-w-4xl border border-transparent"
         }`}
       >
         <div className="flex items-center justify-between">

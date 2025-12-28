@@ -1,4 +1,4 @@
-export function AdditionalFeatures() {
+export default function AdditionalFeatures() {
   const targetUsers = [
     {
       title: "Students & Teachers",

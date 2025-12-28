@@ -3,6 +3,7 @@
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -80,6 +81,36 @@ export default function SignIn() {
                   },
                   onResponse: () => {
                     setLoading(false);
+                  },
+                  onError: (ctx) => {
+                    // Handle Arcjet-specific errors
+                    // Check error code first (more reliable than string matching)
+                    const errorCode = ctx.error?.code;
+                    const errorMessage =
+                      ctx.error?.message ||
+                      ctx.error?.error ||
+                      "An error occurred";
+
+                    if (
+                      errorCode === "RATE_LIMIT" ||
+                      errorMessage.includes("RATE_LIMIT") ||
+                      errorMessage.includes("rate limit") ||
+                      errorMessage.includes("too many")
+                    ) {
+                      toast.error(
+                        "Too many signin attempts. Please try again later."
+                      );
+                    } else if (
+                      errorCode === "FORBIDDEN" ||
+                      errorMessage.includes("BOT_DETECTED") ||
+                      errorMessage.includes("bot detected")
+                    ) {
+                      toast.error(
+                        "Unable to complete signin. Please contact support if this persists."
+                      );
+                    } else {
+                      toast.error(errorMessage);
+                    }
                   },
                   onSuccess: () => {
                     router.push("/dashboard");
