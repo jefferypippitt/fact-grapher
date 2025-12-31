@@ -1,8 +1,10 @@
 "use client";
 
-import { ArrowRight, Rocket } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { RocketIcon, type RocketIconHandle } from "@/components/ui/rocket";
 
 type YoutubeDemoProps = {
   href?: string;
@@ -11,18 +13,22 @@ type YoutubeDemoProps = {
 export default function YoutubeDemo({
   href = "https://youtu.be/vL_NvSo7Lgo",
 }: YoutubeDemoProps) {
+  const rocketRef = useRef<RocketIconHandle>(null);
+
   return (
     <div>
-      <Button asChild variant="default">
+      <Button asChild variant="outline">
         <Link
           className="group"
           href={href}
+          onMouseEnter={() => rocketRef.current?.startAnimation()}
+          onMouseLeave={() => rocketRef.current?.stopAnimation()}
           rel="noopener noreferrer"
           target="_blank"
         >
-          <Rocket />
+          <RocketIcon ref={rocketRef} size={20} />
           <span>Live Demo</span>
-          <ArrowRight className="transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight />
         </Link>
       </Button>
     </div>

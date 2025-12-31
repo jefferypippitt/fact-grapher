@@ -15,14 +15,14 @@ export default function Footer() {
           Fact Grapher
         </p>
         <p>
-          Made by{" "}
+          A project by{" "}
           <Button asChild className="p-0" variant="link">
             <Link
               href="https://github.com/jefferypippitt"
               rel="noopener noreferrer"
               target="_blank"
             >
-              Jeffery Pippitt
+              @jefferypippitt
             </Link>
           </Button>
         </p>

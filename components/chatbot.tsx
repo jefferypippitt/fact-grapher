@@ -2,7 +2,8 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { AlertCircle, CopyIcon } from "lucide-react";
+import { AlertCircleIcon, CopyIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useEffect, useState } from "react";
@@ -44,8 +45,7 @@ import {
 } from "@/components/ai-elements/sources";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { StyleDetails } from "@/components/style-details";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 
 const suggestions = [
   "How to make an omlete",
@@ -531,26 +531,6 @@ export default function AIChat({
         </Conversation>
 
         <div className="mt-4 flex flex-col gap-4">
-          {!hasTokens && (
-            <Alert className="border-yellow-500/50 bg-yellow-500/10">
-              <AlertCircle className="size-4 text-yellow-500" />
-              <AlertTitle className="text-yellow-500">
-                No Tokens Remaining
-              </AlertTitle>
-              <AlertDescription className="text-yellow-500/90">
-                Purchase more to generate new infographics.
-              </AlertDescription>
-              <div className="mt-3">
-                <Button
-                  onClick={() => router.push("/pricing")}
-                  size="sm"
-                  variant="default"
-                >
-                  Buy Tokens
-                </Button>
-              </div>
-            </Alert>
-          )}
           <Suggestions className="mt-4">
             {suggestions.map((suggestion) => (
               <Suggestion
@@ -603,6 +583,17 @@ export default function AIChat({
           <div className="flex justify-center">
             <StyleDetails />
           </div>
+          {!hasTokens && (
+            <Alert>
+              <AlertCircleIcon />
+              <AlertTitle>
+                No Tokens Remaining -{" "}
+                <Link className="underline hover:no-underline" href="/pricing">
+                  Buy More
+                </Link>
+              </AlertTitle>
+            </Alert>
+          )}
         </div>
       </div>
     </div>

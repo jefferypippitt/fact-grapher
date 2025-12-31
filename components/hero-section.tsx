@@ -111,6 +111,7 @@ export default function HeroSection() {
     "left-to-right" | "right-to-left"
   >("left-to-right");
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const swooshAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const totalPages = Math.ceil(gallery.length / CARDS_PER_PAGE);
   const startIndex = currentPage * CARDS_PER_PAGE;
@@ -118,16 +119,27 @@ export default function HeroSection() {
   const currentGallery = gallery.slice(startIndex, endIndex);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && audioRef.current === null) {
-      audioRef.current = new Audio("/paper-slide.mp3");
-      audioRef.current.volume = 0.3;
-      audioRef.current.preload = "auto";
+    if (typeof window !== "undefined") {
+      if (audioRef.current === null) {
+        audioRef.current = new Audio("/paper-slide.mp3");
+        audioRef.current.volume = 0.3;
+        audioRef.current.preload = "auto";
+      }
+      if (swooshAudioRef.current === null) {
+        swooshAudioRef.current = new Audio("/swoosh.mp3");
+        swooshAudioRef.current.volume = 0.2;
+        swooshAudioRef.current.preload = "auto";
+      }
     }
 
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
+      }
+      if (swooshAudioRef.current) {
+        swooshAudioRef.current.pause();
+        swooshAudioRef.current = null;
       }
     };
   }, []);
@@ -145,13 +157,24 @@ export default function HeroSection() {
     }
   };
 
+  const playSwooshSound = () => {
+    if (swooshAudioRef.current) {
+      swooshAudioRef.current.currentTime = 0;
+      swooshAudioRef.current.play().catch(() => {
+        // Silently handle playback errors (browsers may block autoplay)
+      });
+    }
+  };
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-4">
       <div className="text-center">
-        <h1 className="font-semibold text-2xl text-foreground md:text-3xl">
-          <span className="text-primary">AI-Powered</span> Infographics In
-          Seconds
+        <h1 className="font-semibold text-2xl text-foreground md:text-3xl lg:text-4xl">
+          <span>AI-Powered Infographics In Seconds</span>
         </h1>
+        <p className="mt-4 max-w-2xl text-muted-foreground text-sm md:text-base">
+          Turn complex ideas into beautiful visuals instantly.
+        </p>
       </div>
 
       <div className="-mt-4 relative h-[400px] w-full max-w-4xl overflow-visible px-4 sm:h-[400px]">
@@ -231,30 +254,34 @@ export default function HeroSection() {
             return (
               <button
                 aria-label={`Go to page ${pageNumber + 1}`}
-                className={`h-2 rounded-full transition-all ${
+                className={`h-3 rounded-full transition-all ${
                   currentPage === pageNumber
-                    ? "w-8 bg-primary"
-                    : "w-2 bg-muted hover:bg-muted-foreground/50"
+                    ? "w-10 bg-primary"
+                    : "w-3 bg-muted hover:bg-muted-foreground/50"
                 }`}
                 key={`pagination-dot-page-${pageNumber}`}
                 onClick={() => {
-                  setHoveredIndex(null);
-                  setHasAnimated(true);
-                  setIsTransitioning(true);
+                  // Only play sound and transition if navigating to a different page
+                  if (pageNumber !== currentPage) {
+                    playSwooshSound();
+                    setHoveredIndex(null);
+                    setHasAnimated(true);
+                    setIsTransitioning(true);
 
-                  // Determine direction: forward (higher page) = right-to-left, backward = left-to-right
-                  const direction =
-                    pageNumber > currentPage
-                      ? "right-to-left"
-                      : "left-to-right";
-                  setAnimationDirection(direction);
+                    // Determine direction: forward (higher page) = right-to-left, backward = left-to-right
+                    const direction =
+                      pageNumber > currentPage
+                        ? "right-to-left"
+                        : "left-to-right";
+                    setAnimationDirection(direction);
 
-                  setCurrentPage(pageNumber);
-                  // Re-enable hover sounds after animation completes
-                  // Account for max delay (last card: 0.2s) + duration (0.7s) = 0.9s
-                  setTimeout(() => {
-                    setIsTransitioning(false);
-                  }, 900);
+                    setCurrentPage(pageNumber);
+                    // Re-enable hover sounds after animation completes
+                    // Account for max delay (last card: 0.2s) + duration (0.7s) = 0.9s
+                    setTimeout(() => {
+                      setIsTransitioning(false);
+                    }, 900);
+                  }
                 }}
                 type="button"
               />
