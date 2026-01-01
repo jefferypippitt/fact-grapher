@@ -36,6 +36,16 @@ export const botOptions = {
   allow: [], // prevents bots from submitting the form
 } satisfies BotOptions;
 
+// Bot detection options that allow SEO crawlers
+export const seoFriendlyBotOptions = {
+  mode: "LIVE",
+  // Allow search engine crawlers for SEO discovery
+  // See: https://arcjet.com/bot-list for full list
+  allow: [
+    "CATEGORY:SEARCH_ENGINE", // Google, Bing, DuckDuckGo, Yandex, Baidu, etc.
+  ],
+} satisfies BotOptions;
+
 // Rate limit options for signup
 export const signupRateLimitOptions = {
   mode: "LIVE",

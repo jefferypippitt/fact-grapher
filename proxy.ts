@@ -2,15 +2,16 @@ import ip from "@arcjet/ip";
 import { detectBot } from "@arcjet/next";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { aj, botOptions, generalRateLimit } from "@/lib/arcjet";
+import { aj, generalRateLimit, seoFriendlyBotOptions } from "@/lib/arcjet";
 
 export async function proxy(request: NextRequest) {
   // Extract IP address for rate limiting
   const requestIp = ip(request) || "127.0.0.1";
 
   // Apply general rate limiting and bot protection using withRule()
+  // Using seoFriendlyBotOptions to allow search engine crawlers (Google, Bing, etc.)
   const decision = await aj
-    .withRule(detectBot(botOptions))
+    .withRule(detectBot(seoFriendlyBotOptions))
     .withRule(generalRateLimit)
     .protect(request, {
       userId: requestIp, // Use IP as userId for unauthenticated requests
