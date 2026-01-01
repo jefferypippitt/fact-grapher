@@ -88,12 +88,17 @@ export const auth = betterAuth({
               throw new Error("No product ID found in order.");
             }
 
+            const orderId = order.data.id;
+
             try {
-              await insertPurchase(productId, externalCustomerId);
+              await insertPurchase(productId, externalCustomerId, {
+                polarOrderId: orderId,
+              });
             } catch (error) {
               console.error("Error inserting purchase:", error);
               console.error("Failed productId:", productId);
               console.error("Failed externalCustomerId:", externalCustomerId);
+              console.error("Failed orderId:", orderId);
               throw error;
             }
           },

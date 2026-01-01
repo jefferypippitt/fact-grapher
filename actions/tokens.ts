@@ -74,10 +74,34 @@ export async function getUserTokens() {
 export async function insertPurchase(
   polarProductId: string,
   userId: string,
-  shouldRevalidate = true
+  options: { shouldRevalidate?: boolean; polarOrderId?: string } = {}
 ) {
+  const { shouldRevalidate = true, polarOrderId } = options;
+
   try {
     const userData = await getUserById(userId);
+
+    // Check for duplicate order if polarOrderId is provided
+    if (polarOrderId) {
+      const [existingPurchase] = await db
+        .select()
+        .from(purchases)
+        .where(eq(purchases.polarOrderId, polarOrderId))
+        .limit(1);
+
+      if (existingPurchase) {
+        console.log(
+          `Purchase already exists for order ${polarOrderId}, skipping duplicate`
+        );
+        // Return the product name without creating a duplicate
+        const [existingProduct] = await db
+          .select()
+          .from(products)
+          .where(eq(products.id, existingPurchase.productId))
+          .limit(1);
+        return existingProduct?.name ?? "Unknown";
+      }
+    }
 
     const [product] = await db
       .select()
@@ -106,6 +130,7 @@ export async function insertPurchase(
     await db.insert(purchases).values({
       userId: userData.id,
       productId: product.id,
+      polarOrderId: polarOrderId ?? null,
     });
 
     await refreshUserTokens(userData.id);
@@ -191,11 +216,16 @@ async function getPolarCustomerForUser(userId: string, polarClient: Polar) {
 
 async function processOrder(
   order: {
+    id?: string;
     status?: string;
     product?: { id?: string } | null;
     createdAt?: Date | string;
   },
-  existingPurchases: Array<{ productId: string; createdAt: Date }>,
+  existingPurchases: Array<{
+    productId: string;
+    createdAt: Date;
+    polarOrderId: string | null;
+  }>,
   userId: string
 ): Promise<boolean> {
   if (order.status !== "paid" || !order.product?.id) {
@@ -203,16 +233,32 @@ async function processOrder(
   }
 
   const polarProductId = order.product.id;
+  const polarOrderId = order.id;
   const orderCreatedAt = order.createdAt ? new Date(order.createdAt) : null;
 
+  // Check if we already have this exact order recorded
+  if (polarOrderId) {
+    const orderExists = existingPurchases.some(
+      (p) => p.polarOrderId === polarOrderId
+    );
+    if (orderExists) {
+      return false;
+    }
+  }
+
+  // Fallback to time-based deduplication if no order ID
   if (
+    !polarOrderId &&
     isOrderAlreadyRecorded(orderCreatedAt, polarProductId, existingPurchases)
   ) {
     return false;
   }
 
   try {
-    await insertPurchase(polarProductId, userId, false);
+    await insertPurchase(polarProductId, userId, {
+      shouldRevalidate: false,
+      polarOrderId,
+    });
     return true;
   } catch (error) {
     console.error(
@@ -256,6 +302,7 @@ export async function syncRecentPurchases() {
       .select({
         productId: products.polarProductId,
         createdAt: purchases.createdAt,
+        polarOrderId: purchases.polarOrderId,
       })
       .from(purchases)
       .innerJoin(products, eq(purchases.productId, products.id))

@@ -113,16 +113,21 @@ export const products = pgTable("products", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const purchases = pgTable("purchases", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  productId: integer("product_id")
-    .notNull()
-    .references(() => products.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const purchases = pgTable(
+  "purchases",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    productId: integer("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    polarOrderId: text("polar_order_id").unique(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("purchases_userId_idx").on(table.userId)]
+);
 
 export const tokenSpends = pgTable("token_spends", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
