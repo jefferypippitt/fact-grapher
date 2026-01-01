@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Fact Grapher" }],
   creator: "Fact Grapher",
   publisher: "Fact Grapher",
-  metadataBase: new URL("https://fact-grapher.vercel.app"),
+  metadataBase: new URL("https://factgrapher.xyz"),
   alternates: {
     canonical: "/",
   },
