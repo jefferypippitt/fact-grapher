@@ -116,6 +116,12 @@ function MobileAuthLinks({
   if (!(isAuthenticated && user)) {
     return (
       <div className="flex flex-col gap-2">
+        <Link
+          className="py-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
+          href="/about"
+        >
+          About
+        </Link>
         <Button
           asChild
           className="w-full justify-start"
@@ -138,6 +144,12 @@ function MobileAuthLinks({
 
   return (
     <>
+      <Link
+        className="py-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
+        href="/about"
+      >
+        About
+      </Link>
       <Link
         className="py-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
         href="/dashboard"
@@ -250,26 +262,34 @@ export default function Header({
         }`}
       >
         <div className="flex items-center justify-between">
-          <Link
-            className="group flex items-center gap-2 transition-opacity hover:opacity-80"
-            href="/"
-          >
-            <Image
-              alt="Fact Grapher"
-              className="size-8 w-auto"
-              height={50}
-              src="/FG-logo.png"
-              width={50}
-            />
-            <span className="flex items-center gap-1 text-[16px] tracking-[-1px] transition-opacity duration-300 group-hover:opacity-65">
-              Fact Grapher
-            </span>
-          </Link>
+          {/* Left - Logo + About */}
+          <div className="flex items-center gap-4">
+            <Link
+              className="group flex items-center gap-2 transition-opacity hover:opacity-80"
+              href="/"
+            >
+              <Image
+                alt="Fact Grapher"
+                className="size-8 w-auto"
+                height={50}
+                src="/FG-logo.png"
+                width={50}
+              />
+              <span className="flex items-center gap-1 text-[16px] tracking-[-1px] transition-opacity duration-300 group-hover:opacity-65">
+                Fact Grapher
+              </span>
+            </Link>
+            <Link
+              className="hidden px-3 py-2 text-muted-foreground text-sm transition-colors hover:text-foreground md:block"
+              href="/about"
+            >
+              About
+            </Link>
+          </div>
 
+          {/* Right - Auth Section */}
           <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 md:flex">
-              {renderAuthSection()}
-            </div>
+            <div className="hidden md:block">{renderAuthSection()}</div>
 
             <div className="flex items-center gap-2 md:hidden">
               <Button

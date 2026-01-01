@@ -14,18 +14,27 @@ export default function Footer() {
           </Suspense>{" "}
           Fact Grapher
         </p>
-        <p>
-          A project by{" "}
-          <Button asChild className="p-0" variant="link">
-            <Link
-              href="https://github.com/jefferypippitt"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              @jefferypippitt
-            </Link>
-          </Button>
-        </p>
+        <div className="flex items-center gap-4">
+          <Link
+            className="transition-colors hover:text-foreground"
+            href="/about"
+          >
+            About
+          </Link>
+          <span className="text-muted-foreground/50">·</span>
+          <span>
+            A project by{" "}
+            <Button asChild className="p-0" variant="link">
+              <Link
+                href="https://github.com/jefferypippitt"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                @jefferypippitt
+              </Link>
+            </Button>
+          </span>
+        </div>
       </div>
     </footer>
   );
