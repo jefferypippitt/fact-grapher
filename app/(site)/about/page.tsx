@@ -68,23 +68,23 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <article className="mx-auto max-w-4xl space-y-6 py-12">
+    <article className="mx-auto max-w-4xl space-y-6 px-4 py-8 md:py-12">
       <header className="space-y-2">
-        <h1 className="font-bold text-3xl tracking-tight">
+        <h1 className="font-bold text-xl tracking-tight sm:text-2xl md:text-3xl">
           About Fact Grapher
         </h1>
-        <p className="text-lg text-muted-foreground leading-relaxed">
+        <p className="text-muted-foreground text-sm leading-relaxed md:text-base lg:text-lg">
           Transforming complex information into stunning visual stories with the
           power of AI.
         </p>
       </header>
 
-      <hr className="border-border" />
-
       <section className="space-y-4">
-        <h2 className="font-semibold text-xl tracking-tight">Our Mission</h2>
+        <h2 className="font-semibold text-lg tracking-tight md:text-xl">
+          Our Mission
+        </h2>
 
-        <p className="text-muted-foreground leading-relaxed">
+        <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
           At Fact Grapher, we believe everyone deserves the ability to
           communicate complex ideas through beautiful visuals. Traditional
           infographic creation typically requires expensive design software,
@@ -92,7 +92,7 @@ export default function AboutPage() {
           that.
         </p>
 
-        <p className="text-muted-foreground leading-relaxed">
+        <p className="text-muted-foreground text-sm leading-relaxed md:text-base">
           Our AI-powered platform analyzes your topic, gathers relevant data,
           and generates professional-quality infographics in seconds instead of
           hours. Whether you're a student preparing a presentation, a marketer
@@ -102,9 +102,11 @@ export default function AboutPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-semibold text-xl tracking-tight">How It Works</h2>
+        <h2 className="font-semibold text-lg tracking-tight md:text-xl">
+          How It Works
+        </h2>
 
-        <ol className="list-inside list-decimal space-y-3 text-muted-foreground leading-relaxed">
+        <ol className="list-inside list-decimal space-y-3 text-muted-foreground text-sm leading-relaxed md:text-base">
           <li>
             <strong className="text-foreground">Share Your Idea:</strong>{" "}
             Describe your topic and choose your preferred visual style. Our AI
@@ -124,11 +126,11 @@ export default function AboutPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-semibold text-xl tracking-tight">
+        <h2 className="font-semibold text-lg tracking-tight md:text-xl">
           Who Uses Fact Grapher?
         </h2>
 
-        <ul className="list-inside list-disc space-y-3 text-muted-foreground leading-relaxed">
+        <ul className="list-inside list-disc space-y-3 text-muted-foreground text-sm leading-relaxed md:text-base">
           <li>
             <strong className="text-foreground">Educators and Students</strong>{" "}
             who want engaging visual aids for lectures, research papers, and
@@ -156,24 +158,10 @@ export default function AboutPage() {
         </ul>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="font-semibold text-xl tracking-tight">
-          Built With Modern Technology
-        </h2>
-
-        <p className="text-muted-foreground leading-relaxed">
-          Fact Grapher runs on enterprise-grade infrastructure to ensure
-          reliability, speed, and security. We use Next.js for lightning-fast
-          performance, Vercel for global edge deployment, and advanced AI models
-          for intelligent content generation. Your data is always processed
-          securely and never shared with third parties.
-        </p>
-      </section>
-
       <hr className="border-border" />
 
       <section className="space-y-4">
-        <h2 className="font-semibold text-xl tracking-tight">
+        <h2 className="font-semibold text-lg tracking-tight md:text-xl">
           Ready to Create Your First Infographic?
         </h2>
 

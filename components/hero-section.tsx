@@ -58,8 +58,8 @@ const getInitialPosition = (
 ) => {
   if (direction === "left-to-right") {
     // Cards start from the left side and move right
-    const startX = -400; // Start off-screen to the left
-    const offsetX = index * 20; // Slight stagger
+    const startX = -300; // Start off-screen to the left
+    const offsetX = index * 15; // Slight stagger
     return {
       x: startX + offsetX - imageSize / 2,
       y: -imageSize / 2,
@@ -67,8 +67,8 @@ const getInitialPosition = (
     };
   }
   // Cards start from the right side and move left
-  const startX = 400; // Start off-screen to the right
-  const offsetX = index * 20; // Slight stagger
+  const startX = 300; // Start off-screen to the right
+  const offsetX = index * 15; // Slight stagger
   return {
     x: startX - offsetX - imageSize / 2,
     y: -imageSize / 2,
@@ -85,12 +85,13 @@ const getFinalPosition = (
   const offsetFromCenter = index - centerIndex;
 
   // Ribbon spread: cards fan out in an arc with generous spacing to prevent overlap
-  const spreadDistance = offsetFromCenter * 140; // Increased spacing to prevent overlap
-  const archHeight = 35; // Reduced arch height for flatter, more accessible spread
+  // Scale spread distance based on card size (smaller cards need less spread)
+  const spreadDistance = offsetFromCenter * (imageSize * 0.6); // 60% of card size for spacing
+  const archHeight = 25; // Reduced arch height for flatter, more accessible spread
   const baseY = (offsetFromCenter * offsetFromCenter * archHeight) / 4;
 
   // Rotation increases as cards spread outward
-  const rotation = offsetFromCenter * 7; // Reduced rotation for cleaner look
+  const rotation = offsetFromCenter * 6; // Reduced rotation for cleaner look
 
   // Higher index values are on top (1 over 0, 2 over 1, 3 over 2, etc.)
   // This ensures cards on the right are above cards on the left for easy sequential hovering
@@ -167,19 +168,19 @@ export default function HeroSection() {
   };
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-4">
+    <div className="mx-auto flex h-[calc(100svh-8rem)] max-w-4xl flex-col items-center justify-center gap-6 px-4 md:gap-8">
       <div className="text-center">
-        <h1 className="font-semibold text-2xl text-foreground md:text-3xl lg:text-4xl">
+        <h1 className="font-semibold text-2xl text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
           <span>AI-Powered Infographics In Seconds</span>
         </h1>
-        <p className="mt-4 max-w-2xl text-muted-foreground text-sm md:text-base">
+        <p className="mx-auto mt-4 max-w-3xl text-muted-foreground text-sm sm:text-base md:text-lg">
           Turn complex ideas into beautiful visuals instantly.
         </p>
       </div>
 
-      <div className="-mt-4 relative h-[400px] w-full max-w-4xl overflow-visible px-4 sm:h-[400px]">
+      <div className="-mt-4 sm:-mt-6 md:-mt-8 relative h-[340px] w-full max-w-4xl overflow-visible px-4 sm:h-[380px] md:h-[440px]">
         {currentGallery.map((item, index) => {
-          const imageSize = 200;
+          const imageSize = 200; // Base size for position calculations
           const initial = getInitialPosition(
             index,
             imageSize,
@@ -198,7 +199,7 @@ export default function HeroSection() {
                 opacity: 1,
                 zIndex: isHovered ? 20 : final.zIndex,
               }}
-              className="absolute top-1/2 left-1/2 h-[200px] w-[200px] cursor-pointer overflow-hidden rounded-xl shadow-lg transition-shadow sm:h-[240px] sm:w-[240px]"
+              className="absolute top-1/2 left-1/2 h-[180px] w-[180px] cursor-pointer overflow-hidden rounded-xl shadow-lg transition-shadow sm:h-[220px] sm:w-[220px] md:h-[260px] md:w-[260px]"
               initial={
                 hasAnimated
                   ? {
@@ -254,10 +255,10 @@ export default function HeroSection() {
             return (
               <button
                 aria-label={`Go to page ${pageNumber + 1}`}
-                className={`h-3 rounded-full transition-all ${
+                className={`h-2.5 rounded-full transition-all sm:h-3 ${
                   currentPage === pageNumber
-                    ? "w-10 bg-primary"
-                    : "w-3 bg-muted hover:bg-muted-foreground/50"
+                    ? "w-8 bg-primary sm:w-10"
+                    : "w-2.5 bg-muted hover:bg-muted-foreground/50 sm:w-3"
                 }`}
                 key={`pagination-dot-page-${pageNumber}`}
                 onClick={() => {
@@ -290,9 +291,7 @@ export default function HeroSection() {
         </div>
       )}
 
-      <div className="mt-4">
-        <YoutubeDemo />
-      </div>
+      <YoutubeDemo />
     </div>
   );
 }

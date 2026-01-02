@@ -15,8 +15,9 @@ export async function getUserSession() {
     });
 
     return session;
-  } catch (e) {
-    console.error("Error getting user session:", e);
+  } catch {
+    // Silently return null - this is expected during prerendering
+    // when headers() is not available
     return null;
   }
 }

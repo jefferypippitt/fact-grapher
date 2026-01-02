@@ -36,21 +36,21 @@ export default function FAQSection() {
   ];
 
   return (
-    <section className="py-8">
+    <section className="px-4 py-8">
       <div className="mx-auto max-w-4xl">
-        <h2 className="mb-3 text-left font-semibold text-xl md:text-2xl lg:text-3xl">
+        <h2 className="mb-2 text-left font-semibold text-xl sm:text-2xl md:text-3xl">
           Frequently Asked Questions
         </h2>
-        <p className="mb-6 max-w-2xl text-muted-foreground text-sm md:text-base">
+        <p className="mb-4 max-w-2xl text-muted-foreground text-sm md:mb-6 md:text-base">
           Common questions answered.
         </p>
         <Accordion className="w-full" collapsible type="single">
           {faqs.map((faq) => (
             <AccordionItem key={faq.question} value={faq.question}>
-              <AccordionTrigger className="text-left [&>svg]:text-primary">
+              <AccordionTrigger className="text-left text-sm md:text-base [&>svg]:text-primary">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent className="text-muted-foreground text-sm md:text-base">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

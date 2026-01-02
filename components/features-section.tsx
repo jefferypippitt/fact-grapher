@@ -27,13 +27,13 @@ const steps: StepType[] = [
 
 export default function FeaturesSection() {
   return (
-    <section className="py-8">
+    <section className="px-4 py-8">
       <div className="mx-auto w-full max-w-4xl">
-        <div className="mb-8 text-center">
-          <h2 className="text-balance font-semibold text-xl md:text-2xl lg:text-3xl">
+        <div className="mb-6 text-center md:mb-8">
+          <h2 className="text-balance font-semibold text-xl sm:text-2xl md:text-3xl">
             Create Perfect Infographics
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground text-sm md:text-base">
+          <p className="mx-auto mt-2 max-w-2xl text-muted-foreground text-sm md:mt-3 md:text-base">
             From concept to download in minutes, not hours.
           </p>
         </div>
@@ -41,16 +41,16 @@ export default function FeaturesSection() {
         <div className="space-y-0">
           {steps.map((step, index) => (
             <div key={step.number}>
-              <div className="flex flex-col gap-6 py-10 md:flex-row md:items-start md:gap-12">
-                <div className="flex items-baseline gap-4 md:w-64 md:shrink-0">
+              <div className="flex flex-col gap-3 py-6 md:flex-row md:items-start md:gap-12 md:py-10">
+                <div className="flex items-baseline gap-3 md:w-64 md:shrink-0 md:gap-4">
                   <span className="font-mono text-primary text-xs md:text-sm">
                     {step.number}
                   </span>
-                  <h3 className="font-semibold text-xl md:text-2xl">
+                  <h3 className="font-semibold text-lg md:text-xl lg:text-2xl">
                     {step.title}
                   </h3>
                 </div>
-                <p className="ml-auto max-w-2xl text-muted-foreground text-sm leading-relaxed md:text-base">
+                <p className="text-muted-foreground text-sm leading-relaxed md:ml-auto md:max-w-2xl md:text-base">
                   {step.description}
                 </p>
               </div>

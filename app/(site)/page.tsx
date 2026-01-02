@@ -6,7 +6,7 @@ import HeroSection from "@/components/hero-section";
 
 export default function Home() {
   return (
-    <div className="space-y-10 md:space-y-16">
+    <div className="space-y-6 md:space-y-10">
       <HeroSection />
       <FeaturesSection />
       <BenefitsSection />

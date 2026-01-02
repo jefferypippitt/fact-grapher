@@ -4,7 +4,7 @@ import { LogOut, Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { getUserSession } from "@/actions/users";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -66,13 +66,13 @@ function UserAvatar({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="relative size-8 rounded-full" variant="ghost">
-          <Avatar className="size-8">
+        <Button className="relative size-7 rounded-full" variant="ghost">
+          <Avatar className="size-7">
             <AvatarImage
               alt={user.name ?? "User"}
               src={user.image ?? undefined}
             />
-            <AvatarFallback>{userInitials}</AvatarFallback>
+            <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -117,25 +117,15 @@ function MobileAuthLinks({
     return (
       <div className="flex flex-col gap-2">
         <Link
-          className="py-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
+          className="py-2 text-base text-muted-foreground transition-colors hover:text-foreground"
           href="/about"
         >
           About
         </Link>
-        <Button
-          asChild
-          className="w-full justify-start"
-          size="sm"
-          variant="outline"
-        >
+        <Button asChild className="w-full justify-start" variant="outline">
           <Link href="/sign-in">Sign In</Link>
         </Button>
-        <Button
-          asChild
-          className="w-full justify-start"
-          size="sm"
-          variant="default"
-        >
+        <Button asChild className="w-full justify-start" variant="default">
           <Link href="/sign-up">Sign Up</Link>
         </Button>
       </div>
@@ -145,19 +135,19 @@ function MobileAuthLinks({
   return (
     <>
       <Link
-        className="py-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
+        className="py-2 text-base text-muted-foreground transition-colors hover:text-foreground"
         href="/about"
       >
         About
       </Link>
       <Link
-        className="py-2 text-muted-foreground text-sm transition-colors hover:text-foreground"
+        className="py-2 text-base text-muted-foreground transition-colors hover:text-foreground"
         href="/dashboard"
       >
         Dashboard
       </Link>
       <button
-        className="py-2 text-left text-muted-foreground text-sm transition-colors hover:text-foreground"
+        className="py-2 text-left text-base text-muted-foreground transition-colors hover:text-foreground"
         onClick={onSignOut}
         type="button"
       >
@@ -167,16 +157,11 @@ function MobileAuthLinks({
   );
 }
 
-export default function Header({
-  sessionPromise,
-}: {
-  sessionPromise?: Promise<Session>;
-}) {
+export default function Header({ session }: { session?: Session }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
 
-  const session = sessionPromise ? use(sessionPromise) : null;
   const user = session?.user;
   const isAuthenticated = !!user;
 
@@ -204,44 +189,44 @@ export default function Header({
     return <AuthButtons />;
   };
 
-  if (!sessionPromise) {
+  if (session === undefined) {
     return (
-      <nav className="sticky top-0 z-50 pt-4">
+      <nav className="sticky top-0 z-50 pt-2">
         <div
-          className={`container rounded-xl border border-transparent bg-background/80 px-4 py-3 backdrop-blur-xl transition-all duration-500 ease-in-out ${
+          className={`container rounded-lg border border-transparent bg-background/80 px-3 py-2 backdrop-blur-xl transition-all duration-500 ease-in-out ${
             isScrolled ? "max-w-2xl" : "max-w-4xl"
           }`}
         >
           <div className="flex items-center justify-between">
             <Link
-              className="group flex items-center gap-2 transition-opacity hover:opacity-80"
+              className="group flex items-center gap-1.5 transition-opacity hover:opacity-80"
               href="/"
             >
               <Image
                 alt="Fact Grapher"
-                className="h-8 w-auto"
-                height={50}
+                className="size-6 w-auto"
+                height={40}
                 src="/FG-logo.png"
-                width={50}
+                width={40}
               />
-              <span className="flex items-center gap-1 text-[16px] tracking-[-1px] transition-opacity duration-300 group-hover:opacity-65">
+              <span className="flex items-center gap-1 text-base tracking-[-0.5px] transition-opacity duration-300 group-hover:opacity-65">
                 Fact Grapher
               </span>
             </Link>
 
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 md:hidden">
                 <Button
                   aria-label="Toggle menu"
-                  className="p-2"
+                  className="size-8 p-0"
                   onClick={toggleMenu}
                   size="sm"
                   variant="ghost"
                 >
                   {isMenuOpen ? (
-                    <X className="h-4 w-4" />
+                    <X className="size-4" />
                   ) : (
-                    <Menu className="h-4 w-4" />
+                    <Menu className="size-4" />
                   )}
                 </Button>
               </div>
@@ -253,9 +238,9 @@ export default function Header({
   }
 
   return (
-    <nav className="sticky top-0 z-50 pt-4">
+    <nav className="sticky top-0 z-50 pt-2">
       <div
-        className={`container rounded-xl bg-background/80 px-4 py-3 backdrop-blur-xl transition-all duration-500 ease-in-out ${
+        className={`container rounded-lg bg-background/80 px-3 py-2 backdrop-blur-xl transition-all duration-500 ease-in-out ${
           isScrolled
             ? "max-w-2xl border bg-background/95 shadow-sm"
             : "max-w-4xl border border-transparent"
@@ -263,24 +248,24 @@ export default function Header({
       >
         <div className="flex items-center justify-between">
           {/* Left - Logo + About */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Link
-              className="group flex items-center gap-2 transition-opacity hover:opacity-80"
+              className="group flex items-center gap-1.5 transition-opacity hover:opacity-80"
               href="/"
             >
               <Image
                 alt="Fact Grapher"
-                className="size-8 w-auto"
-                height={50}
+                className="size-6 w-auto"
+                height={40}
                 src="/FG-logo.png"
-                width={50}
+                width={40}
               />
-              <span className="flex items-center gap-1 text-[16px] tracking-[-1px] transition-opacity duration-300 group-hover:opacity-65">
+              <span className="flex items-center gap-1 text-base tracking-[-0.5px] transition-opacity duration-300 group-hover:opacity-65">
                 Fact Grapher
               </span>
             </Link>
             <Link
-              className="hidden px-3 py-2 text-muted-foreground text-sm transition-colors hover:text-foreground md:block"
+              className="hidden px-2 py-1 text-base text-muted-foreground transition-colors hover:text-foreground md:block"
               href="/about"
             >
               About
@@ -288,21 +273,21 @@ export default function Header({
           </div>
 
           {/* Right - Auth Section */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <div className="hidden md:block">{renderAuthSection()}</div>
 
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-1.5 md:hidden">
               <Button
                 aria-label="Toggle menu"
-                className="p-2"
+                className="size-8 p-0"
                 onClick={toggleMenu}
                 size="sm"
                 variant="ghost"
               >
                 {isMenuOpen ? (
-                  <X className="h-4 w-4" />
+                  <X className="size-4" />
                 ) : (
-                  <Menu className="h-4 w-4" />
+                  <Menu className="size-4" />
                 )}
               </Button>
             </div>
@@ -310,8 +295,8 @@ export default function Header({
         </div>
 
         {isMenuOpen ? (
-          <div className="mt-3 border-t pt-4 pb-2 md:hidden">
-            <div className="flex flex-col gap-3">
+          <div className="mt-2 border-t pt-3 pb-1 md:hidden">
+            <div className="flex flex-col gap-2">
               <MobileAuthLinks
                 isAuthenticated={isAuthenticated}
                 onSignOut={handleSignOut}
