@@ -288,6 +288,21 @@ export default function AIChat({
             onClick: () => router.push("/pricing"),
           },
         });
+      } else if (
+        errorMessage.toLowerCase().includes("too many") ||
+        errorMessage.toLowerCase().includes("rate limit") ||
+        errorMessage.toLowerCase().includes("slow down")
+      ) {
+        toast.error(
+          "Slow down! Please wait a moment before sending another message."
+        );
+      } else if (
+        errorMessage.toLowerCase().includes("bot detected") ||
+        errorMessage.toLowerCase().includes("access denied")
+      ) {
+        toast.error(
+          "Request blocked. Please try again or contact support if this persists."
+        );
       } else {
         toast.error(errorMessage);
       }
@@ -367,7 +382,7 @@ export default function AIChat({
   const isInputDisabled = !(input.trim() && hasTokens);
 
   return (
-    <div className="relative mx-auto size-full h-screen max-h-[800px] max-w-5xl p-6">
+    <div className="relative mx-auto size-full h-screen max-h-[850px] max-w-5xl p-6">
       <div className="flex h-full flex-col">
         <Conversation className="min-h-0 flex-1">
           <ConversationAutoScroll messages={messages} status={status} />
