@@ -66,13 +66,13 @@ function UserAvatar({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="relative size-7 rounded-full" variant="ghost">
-          <Avatar className="size-7">
+        <Button className="relative size-9 rounded-full" variant="ghost">
+          <Avatar className="size-9">
             <AvatarImage
               alt={user.name ?? "User"}
               src={user.image ?? undefined}
             />
-            <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
+            <AvatarFallback className="text-sm">{userInitials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -90,13 +90,13 @@ function UserAvatar({
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/dashboard">
-            <User className="mr-2 size-4" />
+            <User className="size-4" />
             Dashboard
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onSignOut}>
-          <LogOut className="mr-2 size-4" />
+          <LogOut className="size-4" />
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -183,59 +183,14 @@ export default function Header({ session }: { session?: Session }) {
   };
 
   const renderAuthSection = () => {
+    if (session === undefined) {
+      return null;
+    }
     if (isAuthenticated && user) {
       return <UserAvatar onSignOut={handleSignOut} user={user} />;
     }
     return <AuthButtons />;
   };
-
-  if (session === undefined) {
-    return (
-      <nav className="sticky top-0 z-50 pt-2">
-        <div
-          className={`container rounded-lg border border-transparent bg-background/80 px-3 py-2 backdrop-blur-xl transition-all duration-500 ease-in-out ${
-            isScrolled ? "max-w-2xl" : "max-w-4xl"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <Link
-              className="group flex items-center gap-1.5 transition-opacity hover:opacity-80"
-              href="/"
-            >
-              <Image
-                alt="Fact Grapher"
-                className="size-6 w-auto"
-                height={40}
-                src="/FG-logo.png"
-                width={40}
-              />
-              <span className="flex items-center gap-1 text-base tracking-[-0.5px] transition-opacity duration-300 group-hover:opacity-65">
-                Fact Grapher
-              </span>
-            </Link>
-
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-1.5 md:hidden">
-                <Button
-                  aria-label="Toggle menu"
-                  className="size-8 p-0"
-                  onClick={toggleMenu}
-                  size="sm"
-                  variant="ghost"
-                >
-                  {isMenuOpen ? (
-                    <X className="size-4" />
-                  ) : (
-                    <Menu className="size-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-    );
-  }
 
   return (
     <nav className="sticky top-0 z-50 pt-2">
@@ -255,10 +210,10 @@ export default function Header({ session }: { session?: Session }) {
             >
               <Image
                 alt="Fact Grapher"
-                className="size-6 w-auto"
-                height={40}
+                className="size-8"
+                height={32}
                 src="/FG-logo.png"
-                width={40}
+                width={32}
               />
               <span className="flex items-center gap-1 text-base tracking-[-0.5px] transition-opacity duration-300 group-hover:opacity-65">
                 Fact Grapher

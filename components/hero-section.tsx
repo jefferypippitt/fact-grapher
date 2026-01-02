@@ -1,10 +1,11 @@
 "use client";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 import { FeatureCard } from "@/components/feature-card";
 import YoutubeDemo from "@/components/youtube-demo";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const gallery = [
   {
@@ -76,22 +77,28 @@ const getInitialPosition = (
   };
 };
 
+type LayoutConfig = {
+  spreadFactor: number; // How much cards spread apart (percentage of card size)
+  archHeight: number; // Height of the arc
+  rotationFactor: number; // How much cards rotate
+};
+
 const getFinalPosition = (
   index: number,
   imageSize: number,
-  totalCards: number
+  totalCards: number,
+  layout: LayoutConfig
 ) => {
   const centerIndex = Math.floor(totalCards / 2);
   const offsetFromCenter = index - centerIndex;
 
-  // Ribbon spread: cards fan out in an arc with generous spacing to prevent overlap
-  // Scale spread distance based on card size (smaller cards need less spread)
-  const spreadDistance = offsetFromCenter * (imageSize * 0.6); // 60% of card size for spacing
-  const archHeight = 25; // Reduced arch height for flatter, more accessible spread
-  const baseY = (offsetFromCenter * offsetFromCenter * archHeight) / 4;
+  // Ribbon spread: cards fan out in an arc
+  // Use layout config for responsive spacing
+  const spreadDistance = offsetFromCenter * (imageSize * layout.spreadFactor);
+  const baseY = (offsetFromCenter * offsetFromCenter * layout.archHeight) / 4;
 
   // Rotation increases as cards spread outward
-  const rotation = offsetFromCenter * 6; // Reduced rotation for cleaner look
+  const rotation = offsetFromCenter * layout.rotationFactor;
 
   // Higher index values are on top (1 over 0, 2 over 1, 3 over 2, etc.)
   // This ensures cards on the right are above cards on the left for easy sequential hovering
@@ -103,8 +110,137 @@ const getFinalPosition = (
   };
 };
 
+type GalleryCardProps = {
+  item: { alt: string; src: string };
+  index: number;
+  animationDirection: "left-to-right" | "right-to-left";
+  hasAnimated: boolean;
+  isHovered: boolean;
+  isSelected: boolean;
+  isTransitioning: boolean;
+  selectedIndex: number | null;
+  layout: LayoutConfig;
+  cardSize: number;
+  onHoverStart: () => void;
+  onHoverEnd: () => void;
+  onClick: () => void;
+};
+
+function GalleryCard({
+  item,
+  index,
+  animationDirection,
+  hasAnimated,
+  isHovered,
+  isSelected,
+  isTransitioning,
+  selectedIndex,
+  layout,
+  cardSize,
+  onHoverStart,
+  onHoverEnd,
+  onClick,
+}: GalleryCardProps) {
+  const initial = getInitialPosition(index, cardSize, animationDirection);
+  const final = getFinalPosition(index, cardSize, CARDS_PER_PAGE, layout);
+
+  let scale = 1;
+  if (isSelected) {
+    scale = 1.8;
+  } else if (isHovered) {
+    scale = 1.05;
+  }
+
+  let delay = index * 0.05;
+  if (selectedIndex !== null) {
+    delay = 0;
+  } else if (animationDirection === "right-to-left") {
+    delay = (CARDS_PER_PAGE - 1 - index) * 0.05;
+  }
+
+  const initialState = hasAnimated
+    ? {
+        x: initial.x,
+        y: initial.y,
+        rotate: initial.rotation,
+        scale: 0.8,
+        opacity: 0,
+      }
+    : { x: final.x, y: final.y, rotate: final.rotation, scale: 1, opacity: 1 };
+
+  // When selected, use fixed positioning to center on viewport
+  const positionClass = isSelected
+    ? "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+    : "absolute top-1/2 left-1/2";
+
+  // Idle state: no hover, no selection - show wave animation
+  const isIdle = !isHovered && selectedIndex === null && !isTransitioning;
+
+  // Wave animation: subtle up-down motion with staggered timing
+  const waveAmplitude = 8; // pixels to move up/down
+  const getWaveY = () => {
+    if (isSelected) {
+      return 0;
+    }
+    if (isIdle) {
+      return [final.y, final.y - waveAmplitude, final.y];
+    }
+    return final.y;
+  };
+  const waveY = getWaveY();
+
+  return (
+    <motion.div
+      animate={{
+        x: isSelected ? 0 : final.x,
+        y: waveY,
+        rotate: isSelected ? 0 : final.rotation,
+        scale,
+        opacity: 1,
+      }}
+      className={`${positionClass} h-[180px] w-[180px] cursor-pointer overflow-hidden rounded-xl shadow-lg transition-shadow sm:h-[220px] sm:w-[220px] md:h-[260px] md:w-[260px]`}
+      initial={initialState}
+      onClick={onClick}
+      onHoverEnd={onHoverEnd}
+      onHoverStart={onHoverStart}
+      style={{
+        zIndex: isSelected ? 100 : final.zIndex,
+        transformOrigin: "center center",
+        pointerEvents: isTransitioning ? "none" : "auto",
+      }}
+      transition={{
+        duration: isSelected || selectedIndex === null ? 0.5 : 0.7,
+        delay,
+        ease: [0.33, 1, 0.68, 1],
+        scale: {
+          duration: isSelected ? 0.5 : 0.2,
+          ease: [0.33, 1, 0.68, 1],
+        },
+        // Wave animation config - only applies when idle
+        y: isIdle
+          ? {
+              duration: 2,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: "loop",
+              ease: "easeInOut",
+              delay: index * 0.15, // Stagger: each card starts 150ms after the previous
+            }
+          : {
+              duration: 0.5,
+              ease: [0.33, 1, 0.68, 1],
+            },
+      }}
+    >
+      <div className="relative h-full w-full">
+        <FeatureCard imageAlt={item.alt} imageSrc={item.src} />
+      </div>
+    </motion.div>
+  );
+}
+
 export default function HeroSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -113,6 +249,17 @@ export default function HeroSection() {
   >("left-to-right");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const swooshAudioRef = useRef<HTMLAudioElement | null>(null);
+  const isMobile = useIsMobile();
+
+  // Responsive layout configuration
+  // Mobile: tighter spread, flatter arc, less rotation so all 5 cards fit
+  // Desktop: more spread, higher arc, more rotation for dramatic effect
+  const layout: LayoutConfig = isMobile
+    ? { spreadFactor: 0.25, archHeight: 12, rotationFactor: 4 }
+    : { spreadFactor: 0.6, archHeight: 25, rotationFactor: 6 };
+
+  // Card size matches the responsive CSS classes
+  const cardSize = isMobile ? 180 : 260;
 
   const totalPages = Math.ceil(gallery.length / CARDS_PER_PAGE);
   const startIndex = currentPage * CARDS_PER_PAGE;
@@ -144,6 +291,18 @@ export default function HeroSection() {
       }
     };
   }, []);
+
+  // Close selected card on escape key
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && selectedIndex !== null) {
+        setSelectedIndex(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedIndex]);
 
   const playHoverSound = () => {
     // Don't play sound during page transitions
@@ -179,73 +338,55 @@ export default function HeroSection() {
       </div>
 
       <div className="-mt-4 sm:-mt-6 md:-mt-8 relative h-[340px] w-full max-w-4xl overflow-visible px-4 sm:h-[380px] md:h-[440px]">
-        {currentGallery.map((item, index) => {
-          const imageSize = 200; // Base size for position calculations
-          const initial = getInitialPosition(
-            index,
-            imageSize,
-            animationDirection
-          );
-          const final = getFinalPosition(index, imageSize, CARDS_PER_PAGE);
-          const isHovered = hoveredIndex === index;
-
-          return (
-            <motion.div
-              animate={{
-                x: final.x,
-                y: final.y,
-                rotate: final.rotation,
-                scale: isHovered ? 1.05 : 1,
-                opacity: 1,
-                zIndex: isHovered ? 20 : final.zIndex,
-              }}
-              className="absolute top-1/2 left-1/2 h-[180px] w-[180px] cursor-pointer overflow-hidden rounded-xl shadow-lg transition-shadow sm:h-[220px] sm:w-[220px] md:h-[260px] md:w-[260px]"
-              initial={
-                hasAnimated
-                  ? {
-                      x: initial.x,
-                      y: initial.y,
-                      rotate: initial.rotation,
-                      scale: 0.8,
-                      opacity: 0,
-                    }
-                  : {
-                      x: final.x,
-                      y: final.y,
-                      rotate: final.rotation,
-                      scale: 1,
-                      opacity: 1,
-                    }
+        {currentGallery.map((item, index) => (
+          <GalleryCard
+            animationDirection={animationDirection}
+            cardSize={cardSize}
+            hasAnimated={hasAnimated}
+            index={index}
+            isHovered={hoveredIndex === index}
+            isSelected={selectedIndex === index}
+            isTransitioning={isTransitioning}
+            item={item}
+            key={`${item.src}-page-${currentPage}-idx-${index}`}
+            layout={layout}
+            onClick={() => {
+              if (selectedIndex === index) {
+                setSelectedIndex(null);
+              } else {
+                playSwooshSound();
+                setSelectedIndex(index);
+                setHoveredIndex(null);
               }
-              key={`${item.src}-page-${currentPage}-idx-${index}`}
-              onHoverEnd={() => setHoveredIndex(null)}
-              onHoverStart={() => {
+            }}
+            onHoverEnd={() => {
+              if (selectedIndex === null) {
+                setHoveredIndex(null);
+              }
+            }}
+            onHoverStart={() => {
+              if (selectedIndex === null) {
                 setHoveredIndex(index);
                 playHoverSound();
-              }}
-              style={{
-                transformOrigin: "center center",
-                pointerEvents: isTransitioning ? "none" : "auto",
-              }}
-              transition={{
-                duration: 0.7,
-                delay:
-                  animationDirection === "right-to-left"
-                    ? (CARDS_PER_PAGE - 1 - index) * 0.05
-                    : index * 0.05,
-                ease: [0.33, 1, 0.68, 1],
-                scale: {
-                  duration: 0.2,
-                  ease: [0.4, 0, 0.2, 1],
-                },
-              }}
-            >
-              <div className="relative h-full w-full">
-                <FeatureCard imageAlt={item.alt} imageSrc={item.src} />
-              </div>
-            </motion.div>
-          );
-        })}
+              }
+            }}
+            selectedIndex={selectedIndex}
+          />
+        ))}
+
+        {/* Backdrop for selected card */}
+        <AnimatePresence>
+          {selectedIndex !== null && (
+            <motion.div
+              animate={{ opacity: 1 }}
+              className="fixed inset-0 z-50 cursor-pointer bg-black/60 backdrop-blur-sm"
+              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }}
+              onClick={() => setSelectedIndex(null)}
+              transition={{ duration: 0.3 }}
+            />
+          )}
+        </AnimatePresence>
       </div>
 
       {totalPages > 1 && (
@@ -262,6 +403,10 @@ export default function HeroSection() {
                 }`}
                 key={`pagination-dot-page-${pageNumber}`}
                 onClick={() => {
+                  // Don't allow page changes when a card is selected
+                  if (selectedIndex !== null) {
+                    return;
+                  }
                   // Only play sound and transition if navigating to a different page
                   if (pageNumber !== currentPage) {
                     playSwooshSound();
