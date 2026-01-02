@@ -2,6 +2,7 @@
 
 import { Loader2, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -244,12 +245,21 @@ export default function SignUp() {
           </Button>
         </div>
       </CardContent>
-      <CardFooter>
-        <div className="flex w-full justify-center border-t py-4">
-          <p className="text-center text-neutral-500 text-xs">
-            Secured by <span className="text-orange-400">better-auth.</span>
-          </p>
-        </div>
+      <CardFooter className="flex-col gap-2 border-t pt-4">
+        <p className="text-center text-muted-foreground text-xs">
+          By clicking continue, you agree to our{" "}
+          <Link className="text-primary underline" href="/terms">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link className="text-primary underline" href="/privacy">
+            Privacy Policy
+          </Link>
+          .
+        </p>
+        <p className="text-center text-neutral-500 text-xs">
+          Secured by <span className="text-orange-400">better-auth.</span>
+        </p>
       </CardFooter>
     </Card>
   );
