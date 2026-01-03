@@ -3,9 +3,8 @@ import type React from "react";
 import { Fragment } from "react";
 import { getUserImages, getUserImagesCount } from "@/actions/images";
 import { Image } from "@/components/ai-elements/image";
+import { DateBadge } from "@/components/date-badge";
 import { ImageActions } from "@/components/image-actions";
-
-import { Badge } from "@/components/ui/badge";
 import {
   Empty,
   EmptyDescription,
@@ -32,16 +31,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
 
 const ITEMS_PER_PAGE = 7;
 
@@ -134,7 +123,7 @@ export async function ImagesContent({
               <ItemContent className="gap-1">
                 <ItemTitle>{image.prompt}</ItemTitle>
                 <ItemDescription>
-                  Created: <Badge>{formatDate(image.createdAt)}</Badge>
+                  Created: <DateBadge date={image.createdAt} />
                 </ItemDescription>
               </ItemContent>
               <ItemActions>
