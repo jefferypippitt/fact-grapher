@@ -5,7 +5,7 @@ export default function CtaSection() {
   return (
     <section className="px-4 py-8">
       <div className="relative mx-auto flex w-full max-w-4xl flex-col justify-between gap-y-4 rounded-3xl border bg-card px-4 py-6 shadow-sm sm:rounded-4xl md:px-6 md:py-10 dark:bg-card/50">
-        <div className="space-y-1">
+        <div className="space-y-2">
           <h2 className="text-center font-semibold text-lg tracking-tight sm:text-xl md:text-2xl lg:text-3xl">
             Start Creating Your Infographic Today.
           </h2>

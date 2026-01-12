@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { FeatureCard } from "@/components/feature-card";
 import YoutubeDemo from "@/components/youtube-demo";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Background } from "./background";
 
 const gallery = [
   {
@@ -327,7 +328,8 @@ export default function HeroSection() {
   };
 
   return (
-    <div className="mx-auto flex h-[calc(100svh-8rem)] max-w-4xl flex-col items-center justify-center gap-6 px-4 md:gap-8">
+    <div className="relative mx-auto flex h-[calc(100svh-8rem)] max-w-4xl flex-col items-center justify-center gap-6 px-4 md:gap-8">
+      <Background />
       <div className="text-center">
         <h1 className="font-semibold text-2xl text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
           <span>AI-Powered Infographics In Seconds</span>

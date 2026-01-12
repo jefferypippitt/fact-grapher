@@ -17,9 +17,5 @@
     "ui": "@/components/ui",
     "lib": "@/lib",
     "hooks": "@/hooks"
-  },
-  "registries": {
-    "@shadcndesign": "https://shadcndesign-free.vercel.app/r/{name}.json",
-    "@efferd": "https://efferd.com/r/{name}.json"
   }
 }
