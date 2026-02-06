@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 import { FeatureCard } from "@/components/feature-card";
-import YoutubeDemo from "@/components/youtube-demo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Background } from "./background";
 
@@ -239,6 +238,8 @@ function GalleryCard({
   );
 }
 
+const AUTOPLAY_INTERVAL = 5000; // 5 seconds between page changes
+
 export default function HeroSection() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -248,8 +249,10 @@ export default function HeroSection() {
   const [animationDirection, setAnimationDirection] = useState<
     "left-to-right" | "right-to-left"
   >("left-to-right");
+  const [isPaused, setIsPaused] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const swooshAudioRef = useRef<HTMLAudioElement | null>(null);
+  const autoplayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
 
   // Responsive layout configuration
@@ -262,7 +265,6 @@ export default function HeroSection() {
   // Card size matches the responsive CSS classes
   const cardSize = isMobile ? 180 : 260;
 
-  const totalPages = Math.ceil(gallery.length / CARDS_PER_PAGE);
   const startIndex = currentPage * CARDS_PER_PAGE;
   const endIndex = startIndex + CARDS_PER_PAGE;
   const currentGallery = gallery.slice(startIndex, endIndex);
@@ -305,6 +307,52 @@ export default function HeroSection() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedIndex]);
 
+  const totalPages = Math.ceil(gallery.length / CARDS_PER_PAGE);
+
+  // Autoplay: cycle through pages automatically
+  useEffect(() => {
+    // Don't autoplay if paused, transitioning, card selected, or hovering
+    if (
+      isPaused ||
+      isTransitioning ||
+      selectedIndex !== null ||
+      hoveredIndex !== null
+    ) {
+      if (autoplayTimerRef.current) {
+        clearTimeout(autoplayTimerRef.current);
+        autoplayTimerRef.current = null;
+      }
+      return;
+    }
+
+    autoplayTimerRef.current = setTimeout(() => {
+      // Go to next page, or wrap to first page
+      const nextPage = (currentPage + 1) % totalPages;
+      const direction =
+        nextPage > currentPage ? "right-to-left" : "left-to-right";
+
+      setHasAnimated(true);
+      setIsTransitioning(true);
+      setAnimationDirection(direction);
+      setCurrentPage(nextPage);
+      setTimeout(() => setIsTransitioning(false), 900);
+    }, AUTOPLAY_INTERVAL);
+
+    return () => {
+      if (autoplayTimerRef.current) {
+        clearTimeout(autoplayTimerRef.current);
+        autoplayTimerRef.current = null;
+      }
+    };
+  }, [
+    currentPage,
+    isPaused,
+    isTransitioning,
+    selectedIndex,
+    hoveredIndex,
+    totalPages,
+  ]);
+
   const playHoverSound = () => {
     // Don't play sound during page transitions
     if (isTransitioning) {
@@ -331,15 +379,21 @@ export default function HeroSection() {
     <div className="relative mx-auto flex h-[calc(100svh-8rem)] max-w-4xl flex-col items-center justify-center gap-6 px-4 md:gap-8">
       <Background />
       <div className="text-center">
-        <h1 className="font-semibold text-2xl text-foreground sm:text-3xl md:text-4xl lg:text-5xl">
+        <h1 className="font-semibold text-3xl text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
           <span>AI-Powered Infographics In Seconds</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-3xl text-muted-foreground text-sm sm:text-base md:text-lg">
+        <p className="mx-auto mt-4 max-w-3xl text-muted-foreground sm:text-lg md:text-xl">
           Turn complex ideas into beautiful visuals instantly.
         </p>
       </div>
 
-      <div className="-mt-4 sm:-mt-6 md:-mt-8 relative h-[340px] w-full max-w-4xl overflow-visible px-4 sm:h-[380px] md:h-[440px]">
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: Mouse handlers pause gallery animation (UX enhancement, not interactive) */}
+      {/* biome-ignore lint/a11y/noNoninteractiveElementInteractions: Same as above */}
+      <div
+        className="-mt-4 sm:-mt-6 md:-mt-8 relative h-[340px] w-full max-w-4xl overflow-visible px-4 sm:h-[380px] md:h-[440px]"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         {currentGallery.map((item, index) => (
           <GalleryCard
             animationDirection={animationDirection}
@@ -393,52 +447,42 @@ export default function HeroSection() {
 
       {totalPages > 1 && (
         <div className="flex items-center gap-2">
-          {Array.from({ length: totalPages }, (_, pageIndex) => {
-            const pageNumber = pageIndex;
-            return (
-              <button
-                aria-label={`Go to page ${pageNumber + 1}`}
-                className={`h-2.5 rounded-full transition-all sm:h-3 ${
-                  currentPage === pageNumber
-                    ? "w-8 bg-primary sm:w-10"
-                    : "w-2.5 bg-muted hover:bg-muted-foreground/50 sm:w-3"
+          {Array.from({ length: totalPages }).map((_, index) => (
+            <button
+              aria-label={`Go to page ${index + 1}`}
+              className="group relative p-1"
+              disabled={isTransitioning || selectedIndex !== null}
+              key={`page-dot-${gallery[index * CARDS_PER_PAGE]?.src ?? index}`}
+              onClick={() => {
+                if (
+                  index !== currentPage &&
+                  selectedIndex === null &&
+                  !isTransitioning
+                ) {
+                  playSwooshSound();
+                  setHoveredIndex(null);
+                  setHasAnimated(true);
+                  setIsTransitioning(true);
+                  setAnimationDirection(
+                    index > currentPage ? "right-to-left" : "left-to-right"
+                  );
+                  setCurrentPage(index);
+                  setTimeout(() => setIsTransitioning(false), 900);
+                }
+              }}
+              type="button"
+            >
+              <span
+                className={`block size-2 rounded-full transition-all duration-300 ${
+                  currentPage === index
+                    ? "scale-125 bg-primary"
+                    : "bg-primary/30 group-hover:bg-primary/60"
                 }`}
-                key={`pagination-dot-page-${pageNumber}`}
-                onClick={() => {
-                  // Don't allow page changes when a card is selected
-                  if (selectedIndex !== null) {
-                    return;
-                  }
-                  // Only play sound and transition if navigating to a different page
-                  if (pageNumber !== currentPage) {
-                    playSwooshSound();
-                    setHoveredIndex(null);
-                    setHasAnimated(true);
-                    setIsTransitioning(true);
-
-                    // Determine direction: forward (higher page) = right-to-left, backward = left-to-right
-                    const direction =
-                      pageNumber > currentPage
-                        ? "right-to-left"
-                        : "left-to-right";
-                    setAnimationDirection(direction);
-
-                    setCurrentPage(pageNumber);
-                    // Re-enable hover sounds after animation completes
-                    // Account for max delay (last card: 0.2s) + duration (0.7s) = 0.9s
-                    setTimeout(() => {
-                      setIsTransitioning(false);
-                    }, 900);
-                  }
-                }}
-                type="button"
               />
-            );
-          })}
+            </button>
+          ))}
         </div>
       )}
-
-      <YoutubeDemo />
     </div>
   );
 }

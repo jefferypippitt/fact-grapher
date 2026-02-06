@@ -50,13 +50,13 @@ function LogoItem({ logo }: { logo: Logo }) {
 
 export default function BenefitsSection() {
   return (
-    <section className="px-4 py-8">
+    <section className="px-4 py-12 md:py-16">
       <div className="mx-auto w-full max-w-4xl">
         <div className="mb-6 text-center md:mb-8">
-          <h2 className="text-balance font-semibold text-xl sm:text-2xl md:text-3xl">
+          <h2 className="text-balance font-semibold text-xl tracking-tight sm:text-2xl md:text-3xl">
             Powered By Trusted Technologies
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-muted-foreground text-sm md:mt-3 md:text-base">
+          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground text-sm md:mt-4 md:text-base">
             Enterprise grade infrastructure you can trust.
           </p>
         </div>

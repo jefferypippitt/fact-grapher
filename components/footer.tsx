@@ -17,6 +17,13 @@ export default function Footer() {
         <div className="flex items-center gap-4">
           <Link
             className="transition-colors hover:text-foreground"
+            href="/about"
+          >
+            About
+          </Link>
+          <span className="text-muted-foreground/50">·</span>
+          <Link
+            className="transition-colors hover:text-foreground"
             href="/terms"
           >
             Terms

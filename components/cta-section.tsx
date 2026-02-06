@@ -1,24 +1,60 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export default function CtaSection() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <section className="px-4 py-8">
-      <div className="relative mx-auto flex w-full max-w-4xl flex-col justify-between gap-y-4 rounded-3xl border bg-card px-4 py-6 shadow-sm sm:rounded-4xl md:px-6 md:py-10 dark:bg-card/50">
-        <div className="space-y-2">
-          <h2 className="text-center font-semibold text-lg tracking-tight sm:text-xl md:text-2xl lg:text-3xl">
-            Start Creating Your Infographic Today.
-          </h2>
-          <p className="text-balance text-center text-muted-foreground text-sm md:text-base">
-            No long setup required
-          </p>
-        </div>
-        <div className="flex items-center justify-center">
-          <Button asChild className="shadow">
+    <section className="px-4 py-16 md:py-24">
+      <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+        {/* Headline */}
+        <h2 className="text-balance font-semibold text-2xl tracking-tight sm:text-3xl md:text-4xl">
+          Ready To Get Started?
+        </h2>
+
+        {/* Description */}
+        <p className="mx-auto mt-5 max-w-xl text-muted-foreground md:mt-6 md:text-lg">
+          No design skills needed. Just describe what you want and let our AI
+          handle the rest.
+        </p>
+
+        {/* Dual buttons */}
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4 md:mt-10">
+          <Button
+            className="rounded-full"
+            onClick={() => setOpen(true)}
+            size="lg"
+            variant="outline"
+          >
+            See How It Works
+          </Button>
+          <Button asChild className="rounded-full" size="lg" variant="default">
             <Link href="/sign-up">Get Started</Link>
           </Button>
         </div>
       </div>
+
+      {/* YouTube Demo Modal */}
+      <Dialog onOpenChange={setOpen} open={open}>
+        <DialogContent className="max-w-4xl overflow-hidden p-0">
+          <DialogTitle className="sr-only">Product Demo Video</DialogTitle>
+          <div className="aspect-video w-full">
+            {!!open && (
+              <iframe
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="size-full"
+                src="https://www.youtube.com/embed/vL_NvSo7Lgo?autoplay=1"
+                title="Product Demo"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -4,7 +4,7 @@ import { LogOut, Menu, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { getUserSession } from "@/actions/users";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -116,12 +116,6 @@ function MobileAuthLinks({
   if (!(isAuthenticated && user)) {
     return (
       <div className="flex flex-col gap-2">
-        <Link
-          className="py-2 text-base text-muted-foreground transition-colors hover:text-foreground"
-          href="/about"
-        >
-          About
-        </Link>
         <Button asChild className="w-full justify-start" variant="outline">
           <Link href="/sign-in">Sign In</Link>
         </Button>
@@ -134,12 +128,6 @@ function MobileAuthLinks({
 
   return (
     <>
-      <Link
-        className="py-2 text-base text-muted-foreground transition-colors hover:text-foreground"
-        href="/about"
-      >
-        About
-      </Link>
       <Link
         className="py-2 text-base text-muted-foreground transition-colors hover:text-foreground"
         href="/dashboard"
@@ -159,20 +147,10 @@ function MobileAuthLinks({
 
 export default function Header({ session }: { session?: Session }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
 
   const user = session?.user;
   const isAuthenticated = !!user;
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -194,13 +172,7 @@ export default function Header({ session }: { session?: Session }) {
 
   return (
     <nav className="sticky top-0 z-50 pt-2">
-      <div
-        className={`container rounded-lg bg-background/80 px-3 py-2 backdrop-blur-xl transition-all duration-500 ease-in-out ${
-          isScrolled
-            ? "max-w-2xl border bg-background/95 shadow-sm"
-            : "max-w-4xl border border-transparent"
-        }`}
-      >
+      <div className="container max-w-4xl rounded-lg border border-transparent bg-background/80 px-3 py-2 backdrop-blur-xl">
         <div className="flex items-center justify-between">
           {/* Left - Logo + About */}
           <div className="flex items-center gap-2">
@@ -218,12 +190,6 @@ export default function Header({ session }: { session?: Session }) {
               <span className="flex items-center gap-1 text-base tracking-[-0.5px] transition-opacity duration-300 group-hover:opacity-65">
                 Fact Grapher
               </span>
-            </Link>
-            <Link
-              className="hidden px-2 py-1 text-base text-muted-foreground transition-colors hover:text-foreground md:block"
-              href="/about"
-            >
-              About
             </Link>
           </div>
 
