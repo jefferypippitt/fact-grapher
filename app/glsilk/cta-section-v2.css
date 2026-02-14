@@ -1,0 +1,183 @@
+:root {
+  --cta2-shader-front: #a3d4c7;
+  --cta2-shader-mid: #5ea896;
+  --cta2-shader-back: #e0f0eb;
+}
+
+.dark {
+  --cta2-shader-front: #3d7a6d;
+  --cta2-shader-mid: #1f3f37;
+  --cta2-shader-back: #111f1c;
+}
+
+/* ============================================
+   CTA Section V2 — Minimalist Shader Card
+   Modern, clean, and minimalist design
+   ============================================ */
+
+/* ── Section Root ──────────────────────────── */
+
+.cta2-section {
+  /* Fonts — uses next/font CSS variables for zero-layout-shift loading */
+  --cta2-sans: var(--font-sans, "Geist", sans-serif);
+  --cta2-mono: var(--font-mono, "Geist Mono", monospace);
+
+  /* Colors */
+  --cta2-card-bg: oklch(0 0 0 / 0.025);
+  --cta2-card-border: oklch(0 0 0 / 0.1);
+
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: cta2;
+  color: var(--foreground);
+}
+
+.dark .cta2-section {
+  --cta2-card-bg: oklch(1 0 0 / 0.03);
+  --cta2-card-border: oklch(1 0 0 / 0.1);
+}
+
+/* ── Container ──────────────────────────────── */
+
+.cta2-container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem;
+}
+
+/* ── Card ────────────────────────────────────── */
+
+.cta2-card {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  border-radius: 2rem;
+  background: var(--cta2-card-bg);
+  border: 1px solid var(--cta2-card-border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Shader Background ───────────────────────── */
+
+.cta2-shader-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.7;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.dark .cta2-shader-container {
+  opacity: 0.6;
+  mix-blend-mode: lighten;
+}
+
+.cta2-shader {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Content ─────────────────────────────────── */
+
+.cta2-content {
+  position: relative;
+  z-index: 1;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  max-width: 42rem;
+  backface-visibility: hidden;
+}
+
+.cta2-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.cta2-headline {
+  font-family: var(--cta2-sans);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  color: var(--foreground);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.cta2-headline span {
+  font-weight: 300;
+  font-style: italic;
+}
+
+/* ── CTA Actions ─────────────────────────────── */
+
+.cta2-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.cta2-btn {
+  min-height: 2.75rem;
+  padding-inline: 1.75rem;
+  padding-block: 0.625rem;
+  font-size: 0.9375rem;
+}
+
+/* Give the outline button an opaque background so the shader doesn't bleed through */
+.cta2-btn[data-variant="outline"] {
+  background: var(--background);
+}
+
+.dark .cta2-btn[data-variant="outline"] {
+  background: var(--background);
+}
+
+/* ================================
+   Responsive — Tablet (640px+)
+   ================================ */
+
+@container cta2 (min-width: 640px) {
+  .cta2-actions {
+    flex-direction: row;
+    width: auto;
+  }
+}
+
+/* ================================
+   Responsive — Desktop (960px+)
+   ================================ */
+
+@container cta2 (min-width: 960px) {
+  .cta2-card {
+    min-height: 500px;
+  }
+
+  .cta2-content {
+    padding: 6rem 4rem;
+  }
+}
+
+/* ================================
+   Large Desktop (1200px+)
+   ================================ */
+
+@container cta2 (min-width: 1200px) {
+  .cta2-container {
+    padding: 4.5rem 2rem;
+  }
+}

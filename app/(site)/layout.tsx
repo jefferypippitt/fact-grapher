@@ -14,13 +14,11 @@ export default function SiteLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div>
       <Suspense fallback={<Header />}>
         <SessionHeader />
       </Suspense>
-      <main className="container mx-auto max-w-4xl flex-1 px-4 py-4 md:py-6">
-        {children}
-      </main>
+      <main>{children}</main>
       <Footer />
     </div>
   );

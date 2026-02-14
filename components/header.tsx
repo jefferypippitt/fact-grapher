@@ -44,10 +44,10 @@ function getUserInitials(user: {
 function AuthButtons() {
   return (
     <div className="flex items-center gap-2">
-      <Button asChild size="sm" variant="outline">
+      <Button asChild className="rounded-full" size="sm" variant="outline">
         <Link href="/sign-in">Sign In</Link>
       </Button>
-      <Button asChild size="sm" variant="default">
+      <Button asChild className="rounded-full" size="sm" variant="default">
         <Link href="/sign-up">Sign Up</Link>
       </Button>
     </div>
@@ -116,10 +116,18 @@ function MobileAuthLinks({
   if (!(isAuthenticated && user)) {
     return (
       <div className="flex flex-col gap-2">
-        <Button asChild className="w-full justify-start" variant="outline">
+        <Button
+          asChild
+          className="w-full justify-start rounded-full"
+          variant="outline"
+        >
           <Link href="/sign-in">Sign In</Link>
         </Button>
-        <Button asChild className="w-full justify-start" variant="default">
+        <Button
+          asChild
+          className="w-full justify-start rounded-full"
+          variant="default"
+        >
           <Link href="/sign-up">Sign Up</Link>
         </Button>
       </div>
@@ -200,7 +208,7 @@ export default function Header({ session }: { session?: Session }) {
             <div className="flex items-center gap-1.5 md:hidden">
               <Button
                 aria-label="Toggle menu"
-                className="size-8 p-0"
+                className="size-8 rounded-full p-0"
                 onClick={toggleMenu}
                 size="sm"
                 variant="ghost"

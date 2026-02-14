@@ -1,0 +1,283 @@
+.faq3-section {
+  /* Fonts */
+  --faq3-sans: var(--font-sans, "Geist", sans-serif);
+  --faq3-mono: var(--font-mono, "Geist Mono", monospace);
+
+  /* Colors — Light */
+  --faq3-card-bg: oklch(0 0 0 / 0.025);
+  --faq3-card-border: oklch(0 0 0 / 0.06);
+  --faq3-card-open-border: oklch(0 0 0 / 0.14);
+  --faq3-card-shadow:
+    0 1px 3px oklch(0 0 0 / 0.04), 0 1px 2px oklch(0 0 0 / 0.03);
+  --faq3-card-shadow-hover:
+    0 4px 14px oklch(0 0 0 / 0.06), 0 2px 4px oklch(0 0 0 / 0.04);
+  --faq3-icon-color: oklch(0 0 0 / 0.3);
+  --faq3-muted: oklch(0 0 0 / 0.55);
+  --faq3-divider: oklch(0 0 0 / 0.06);
+
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: faq3;
+  color: var(--foreground);
+}
+
+.dark .faq3-section {
+  --faq3-card-bg: oklch(1 0 0 / 0.035);
+  --faq3-card-border: oklch(1 0 0 / 0.06);
+  --faq3-card-open-border: oklch(1 0 0 / 0.14);
+  --faq3-card-shadow:
+    0 1px 3px oklch(0 0 0 / 0.2), 0 1px 2px oklch(0 0 0 / 0.15);
+  --faq3-card-shadow-hover:
+    0 4px 14px oklch(0 0 0 / 0.3), 0 2px 4px oklch(0 0 0 / 0.2);
+  --faq3-icon-color: oklch(1 0 0 / 0.3);
+  --faq3-muted: oklch(1 0 0 / 0.55);
+  --faq3-divider: oklch(1 0 0 / 0.07);
+}
+
+/* ── Container ───────────────────────────── */
+
+.faq3-container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 3.5rem 1.25rem;
+}
+
+/* ── Header (Centered) ──────────────────── */
+
+.faq3-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.faq3-headline {
+  margin: 0;
+  font-family: var(--faq3-sans);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.faq3-subtext {
+  margin: 0;
+  max-width: 30rem;
+  font-family: var(--faq3-sans);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  letter-spacing: 0.06em;
+  color: var(--faq3-muted);
+}
+
+/* ── Grid ────────────────────────────────── */
+
+.faq3-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+/* ── Card ────────────────────────────────── */
+
+.faq3-card {
+  background: var(--faq3-card-bg);
+  border: 1px solid var(--faq3-card-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--faq3-card-shadow);
+  transition:
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.faq3-card:hover {
+  box-shadow: var(--faq3-card-shadow-hover);
+}
+
+.faq3-card--open {
+  border-color: var(--faq3-card-open-border);
+  box-shadow: var(--faq3-card-shadow-hover);
+}
+
+/* ── Card Trigger ────────────────────────── */
+
+.faq3-card-trigger {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.faq3-card-trigger:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+  border-radius: 0.75rem;
+}
+
+/* ── Card Top Row (Category + Icon) ─────── */
+
+.faq3-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.faq3-category {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Plus Icon (rotates to X when open) ─── */
+
+.faq3-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--faq3-icon-color);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.faq3-icon--open {
+  transform: rotate(45deg);
+}
+
+/* ── Question Text ───────────────────────── */
+
+.faq3-card-question {
+  font-family: var(--faq3-sans);
+  font-size: 0.9rem;
+  font-weight: 520;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+/* ── Card Body (expanding answer) ────────── */
+
+.faq3-card-body {
+  overflow: hidden;
+  transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.faq3-card-answer-wrap {
+  padding: 0 1rem 0.875rem;
+}
+
+.faq3-card-answer-wrap::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: var(--faq3-divider);
+  margin-bottom: 0.75rem;
+}
+
+.faq3-card-answer {
+  margin: 0;
+  font-family: var(--faq3-sans);
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--faq3-muted);
+}
+
+/* ================================
+   Responsive — Tablet (640px+)
+   2-column grid
+   ================================ */
+
+@container faq3 (min-width: 640px) {
+  .faq3-container {
+    padding: 3.5rem 2rem;
+  }
+
+  .faq3-header {
+    margin-bottom: 3.5rem;
+  }
+
+  .faq3-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
+  }
+
+  .faq3-card-trigger {
+    padding: 1rem 1.125rem;
+  }
+
+  .faq3-card-answer-wrap {
+    padding: 0 1.125rem 1rem;
+  }
+}
+
+/* ================================
+   Responsive — Desktop (960px+)
+   ================================ */
+
+@container faq3 (min-width: 960px) {
+  .faq3-container {
+    padding: 4.5rem 2.5rem;
+  }
+
+  .faq3-header {
+    margin-bottom: 3.5rem;
+  }
+
+  .faq3-grid {
+    gap: 0.875rem;
+  }
+
+  .faq3-card-trigger {
+    padding: 1.125rem 1.25rem;
+  }
+
+  .faq3-card-question {
+    font-size: 0.95rem;
+  }
+
+  .faq3-card-answer-wrap {
+    padding: 0 1.25rem 1.125rem;
+  }
+
+  .faq3-card-answer {
+    font-size: 0.835rem;
+  }
+}
+
+/* ================================
+   Large Desktop (1200px+)
+   ================================ */
+
+@container faq3 (min-width: 1200px) {
+  .faq3-container {
+    padding: 5rem 3rem;
+  }
+
+  .faq3-card-question {
+    font-size: 1rem;
+  }
+}
+
+/* ================================
+   Accessibility — Reduced Motion
+   ================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .faq3-card-body,
+  .faq3-card,
+  .faq3-icon {
+    transition: none;
+  }
+}
