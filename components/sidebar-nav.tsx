@@ -50,7 +50,7 @@ export function SidebarNav() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+      <SidebarGroupLabel>Home</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {navItems.map((item) => (

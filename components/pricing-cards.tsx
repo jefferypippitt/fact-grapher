@@ -1,25 +1,90 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  Clock,
+  Crown,
+  Flame,
+  Gem,
+  ImageIcon,
+  Star,
+  TestTube,
+  TrendingUp,
+  Wand2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { initiateCheckout } from "@/actions/billing";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
-const PRODUCTS = [
-  { slug: "intro" as const, name: "Intro", tokens: 1, price: 3 },
-  { slug: "bronze" as const, name: "Bronze", tokens: 5, price: 15 },
-  { slug: "silver" as const, name: "Silver", tokens: 10, price: 30 },
-  { slug: "gold" as const, name: "Gold", tokens: 20, price: 60 },
-] as const;
+type Feature = { icon: LucideIcon; text: string };
+
+const PRODUCTS: ReadonlyArray<{
+  slug: string;
+  name: string;
+  tokens: number;
+  price: number;
+  badge: string | null;
+  features: Feature[];
+}> = [
+  {
+    slug: "intro",
+    name: "Intro",
+    tokens: 1,
+    price: 3,
+    badge: "Starter",
+    features: [
+      { icon: TestTube, text: "Try the service risk-free" },
+      { icon: ImageIcon, text: "1 high-quality generation" },
+      { icon: Clock, text: "No expiration on tokens" },
+    ],
+  },
+  {
+    slug: "bronze",
+    name: "Bronze",
+    tokens: 5,
+    price: 15,
+    badge: "Value",
+    features: [
+      { icon: Flame, text: "Great for regular users" },
+      { icon: ImageIcon, text: "5 generations included" },
+      { icon: Wand2, text: "Full creative control" },
+    ],
+  },
+  {
+    slug: "silver",
+    name: "Silver",
+    tokens: 10,
+    price: 30,
+    badge: "Popular",
+    features: [
+      { icon: Star, text: "Our most popular pack" },
+      { icon: ImageIcon, text: "10 generations included" },
+      { icon: TrendingUp, text: "Best per-token value" },
+    ],
+  },
+  {
+    slug: "gold",
+    name: "Gold",
+    tokens: 20,
+    price: 60,
+    badge: "Pro",
+    features: [
+      { icon: Crown, text: "Built for power users" },
+      { icon: ImageIcon, text: "20 generations included" },
+      { icon: Gem, text: "Maximum creative output" },
+    ],
+  },
+];
 
 export default function PricingCards() {
   const [isLoading, setIsLoading] = useState<string | null>(null);
@@ -48,53 +113,44 @@ export default function PricingCards() {
     }
   };
 
-  const getPackFeatures = (tokens: number): string[] => {
-    if (tokens === 1) {
-      return ["Perfect for trying out our service!", "1 generation"];
-    }
-    if (tokens === 5) {
-      return ["A great value pack for regular users!", "5 generations"];
-    }
-    if (tokens === 10) {
-      return ["Our popular choice!", "10 generations"];
-    }
-    if (tokens === 20) {
-      return ["The best value!", "20 generations"];
-    }
-    return [`Get ${tokens} tokens to power your experience.`];
-  };
-
   return (
     <div className="grid w-full gap-6 md:grid-cols-2 lg:grid-cols-4">
       {PRODUCTS.map((product) => (
         <Card
-          className="flex flex-col transition-all duration-300 hover:shadow-lg"
+          className="relative mx-auto w-full max-w-sm pt-0 transition-all duration-300 hover:shadow-lg"
           key={product.slug}
         >
+          <div className="flex aspect-video flex-col items-center justify-center gap-2 rounded-t-xl bg-muted">
+            <span className="font-extrabold text-5xl tracking-tighter">
+              <span className="mr-0.5 align-top font-semibold text-2xl text-muted-foreground">
+                $
+              </span>
+              {product.price}
+            </span>
+            <span className="font-medium text-muted-foreground text-xs uppercase tracking-widest">
+              {product.tokens}{" "}
+              {product.tokens === 1 ? "generation" : "generations"}
+            </span>
+          </div>
           <CardHeader>
-            <CardTitle className="text-2xl">{product.name}</CardTitle>
-            <div className="flex items-baseline gap-2">
-              <span className="font-bold text-3xl">${product.price}</span>
-              <span className="text-muted-foreground">USD</span>
-            </div>
-            <CardDescription>
-              {product.tokens} {product.tokens === 1 ? "token" : "tokens"}
-            </CardDescription>
+            {product.badge ? (
+              <CardAction>
+                <Badge variant="outline">{product.badge}</Badge>
+              </CardAction>
+            ) : null}
+            <CardTitle className="font-semibold text-lg">
+              {product.name}
+            </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-1 flex-col gap-4">
-            <ul className="flex flex-col gap-3">
-              {getPackFeatures(product.tokens).map((feature) => (
-                <li
-                  className="flex items-center gap-2"
-                  key={`${product.slug}-${feature}`}
-                >
-                  <CheckCircle2 className="size-4 shrink-0 text-primary" />
-                  <span className="text-base text-muted-foreground">
-                    {feature}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          <CardContent className="flex flex-col gap-3">
+            {product.features.map((feature) => (
+              <div className="flex items-center gap-2.5" key={feature.text}>
+                <feature.icon className="size-4 shrink-0 text-muted-foreground" />
+                <span className="text-muted-foreground text-sm">
+                  {feature.text}
+                </span>
+              </div>
+            ))}
           </CardContent>
           <CardFooter>
             <Button

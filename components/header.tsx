@@ -180,7 +180,7 @@ export default function Header({ session }: { session?: Session }) {
 
   return (
     <nav className="sticky top-0 z-50 pt-2">
-      <div className="container max-w-4xl rounded-lg border border-transparent bg-background/80 px-3 py-2 backdrop-blur-xl">
+      <div className="container max-w-5xl rounded-lg border border-transparent bg-background/60 px-3 py-2 saturate-150 backdrop-blur-2xl">
         <div className="flex items-center justify-between">
           {/* Left - Logo + About */}
           <div className="flex items-center gap-2">
@@ -192,7 +192,7 @@ export default function Header({ session }: { session?: Session }) {
                 alt="Fact Grapher"
                 className="size-8"
                 height={32}
-                src="/FG-logo.png"
+                src="/icon0.svg"
                 width={32}
               />
               <span className="flex items-center gap-1 text-base tracking-[-0.5px] transition-opacity duration-300 group-hover:opacity-65">

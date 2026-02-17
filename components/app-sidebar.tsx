@@ -24,11 +24,11 @@ export function AppSidebar() {
               alt="Fact Grapher"
               className="size-8 rounded-lg object-contain"
               height={32}
-              src="/FG-logo.png"
+              src="/icon0.svg"
               width={32}
             />
-            <div className="flex flex-col gap-0.5 leading-none">
-              <span className="font-semibold">Fact Grapher</span>
+            <div className="flex flex-col gap-1 leading-none">
+              <span className="font-medium">Fact Grapher</span>
             </div>
           </Link>
         </SidebarMenuButton>

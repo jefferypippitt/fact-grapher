@@ -21,7 +21,7 @@ export default async function SettingsPage() {
     "U";
 
   return (
-    <div className="container mx-auto min-h-[calc(100vh-8rem)] p-6">
+    <div className="px-6 py-6">
       <div className="mb-8">
         <h1 className="mb-2 font-semibold text-2xl">Account Settings</h1>
         <p className="text-muted-foreground">
@@ -29,7 +29,7 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <Card className="max-w-3xl">
+      <Card className="max-w-4xl">
         <CardContent>
           <div className="space-y-6">
             <div>
@@ -79,7 +79,7 @@ export default async function SettingsPage() {
             <Separator />
 
             <div>
-              <h3 className="mb-4 font-semibold text-destructive text-lg">
+              <h3 className="font-semibold text-lg text-red-500">
                 Danger Zone
               </h3>
               <p className="mb-4 text-muted-foreground text-sm">

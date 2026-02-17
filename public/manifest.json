@@ -1,37 +1,21 @@
 {
-  "name": "Fact Grapher - AI-Powered Infographics",
-  "short_name": "Fact Grapher",
-  "description": "Create beautiful, professional infographics in seconds with AI. Generate timeline visualizations, statistical charts, and data-driven graphics instantly.",
+  "name": "factgrapher",
+  "short_name": "factgrapher",
   "icons": [
     {
-      "src": "/apple-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon1.png",
+      "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable"
     },
     {
-      "src": "/icon1.png",
+      "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon0.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "maskable"
     }
   ],
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
-  "display": "standalone",
-  "start_url": "/",
-  "scope": "/",
-  "orientation": "portrait-primary"
+  "display": "standalone"
 }

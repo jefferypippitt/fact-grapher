@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 export default function Footer() {
   return (
     <footer className="py-4">
-      <div className="container flex max-w-4xl flex-col items-center justify-between gap-x-3 gap-y-1 text-center text-muted-foreground text-sm sm:flex-row">
+      <div className="container flex max-w-5xl flex-col items-center justify-between gap-x-3 gap-y-1 px-6 text-center text-muted-foreground text-sm sm:flex-row">
         <p>
           &copy;
           <Suspense fallback={<span>----</span>}>

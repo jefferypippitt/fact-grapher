@@ -46,7 +46,7 @@ export const metadata: Metadata = {
       "Create beautiful, professional infographics in seconds with AI. Generate timeline visualizations, statistical charts, and data-driven graphics instantly.",
     images: [
       {
-        url: "/FG-logo.png",
+        url: "/icon0.svg",
         width: 1200,
         height: 630,
         alt: "Fact Grapher Logo",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     title: "Fact Grapher - AI-Powered Infographics in Seconds",
     description:
       "Create beautiful, professional infographics in seconds with AI.",
-    images: ["/FG-logo.png"],
+    images: ["/icon0.svg"],
     creator: "@factgrapher",
   },
   icons: {
