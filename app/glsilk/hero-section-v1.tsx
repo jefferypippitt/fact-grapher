@@ -12,10 +12,10 @@ export function HeroSectionV1({
   return (
     <div className={cn("relative w-full", className)} {...props}>
       {/* Content */}
-      <div className="flex w-full flex-col items-center justify-center px-6 pt-24 pb-16 md:px-10 md:pt-32 md:pb-20">
+      <div className="flex w-full flex-col items-center justify-center px-6 pt-20 pb-16 md:px-10 md:pt-28 md:pb-20">
         <div className="flex w-full max-w-4xl flex-col items-center justify-center space-y-8 text-center">
           {/* Badge */}
-          <Badge className="rounded-full" variant="secondary">
+          <Badge className="rounded-full" variant="outline">
             <Rocket className="size-4" />
             <span>Now Generating Smarter Visuals</span>
           </Badge>

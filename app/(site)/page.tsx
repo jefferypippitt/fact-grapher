@@ -1,4 +1,4 @@
-import { CtaSectionV2 } from "../glsilk/cta-section-v2";
+import { CallToAction } from "../glsilk/cta";
 import { FaqSectionV3 } from "../glsilk/faq-section-v3";
 import { FeatureSectionV2 } from "../glsilk/feature-section-v2";
 import { HeroSectionV1 } from "../glsilk/hero-section-v1";
@@ -11,7 +11,7 @@ export default function Home() {
       <FeatureSectionV2 />
       <Integrations />
       <FaqSectionV3 />
-      <CtaSectionV2 />
+      <CallToAction />
     </main>
   );
 }

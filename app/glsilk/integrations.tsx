@@ -22,7 +22,7 @@ export function Integrations() {
           className="text-foreground"
           style={{
             fontFamily: "var(--font-sans)",
-            fontSize: "clamp(2rem, 5vw, 3rem)",
+            fontSize: "clamp(1.85rem, 4vw, 2.6rem)",
             fontWeight: 500,
             letterSpacing: "-0.035em",
             lineHeight: 1.1,
@@ -37,8 +37,9 @@ export function Integrations() {
             fontSize: "0.875rem",
             fontWeight: 400,
             lineHeight: 1.7,
-            letterSpacing: "0.06em",
-            maxWidth: "30rem",
+            letterSpacing: "0.02em",
+            maxWidth: "34rem",
+            textWrap: "pretty",
           }}
         >
           Built on proven tools for fast generation, secure delivery, and
