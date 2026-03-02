@@ -43,6 +43,23 @@ const blockConfigs: Record<BlockReason, BlockConfig> = {
 
 const validReasons: BlockReason[] = ["rate-limit", "bot", "forbidden"];
 
+function getSafeReturnPath(returnParam: string | null): string {
+  if (!returnParam) {
+    return "/";
+  }
+
+  // Only allow internal, single-slash paths to prevent open redirects.
+  if (
+    returnParam.startsWith("/") &&
+    !returnParam.startsWith("//") &&
+    !returnParam.includes("\\")
+  ) {
+    return returnParam;
+  }
+
+  return "/";
+}
+
 function BlockedContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -51,7 +68,7 @@ function BlockedContent() {
 
   const reasonParam = searchParams.get("reason") as BlockReason | null;
   const isValidReason = reasonParam && validReasons.includes(reasonParam);
-  const returnTo = searchParams.get("return") || "/";
+  const returnTo = getSafeReturnPath(searchParams.get("return"));
 
   // Redirect to home if accessed directly without a valid reason
   useEffect(() => {

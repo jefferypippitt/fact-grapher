@@ -40,6 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# next-agents-md
+.next-docs/
+
 .cursor*
 .vscode*
 .agents*
+AGENTS.md

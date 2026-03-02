@@ -33,9 +33,6 @@ export const metadata: Metadata = {
   creator: "Fact Grapher",
   publisher: "Fact Grapher",
   metadataBase: new URL("https://factgrapher.xyz"),
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     locale: "en_US",

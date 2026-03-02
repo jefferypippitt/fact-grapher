@@ -11,17 +11,36 @@ const STATIC_ASSET_REGEX = /\.(svg|png|jpg|jpeg|gif|webp|ico|mp3|json)$/;
 function isBrowserRequest(request: NextRequest): boolean {
   const accept = request.headers.get("accept") || "";
   const contentType = request.headers.get("content-type") || "";
+  const fetchMode = request.headers.get("sec-fetch-mode");
+  const fetchDest = request.headers.get("sec-fetch-dest");
+  const isNavigation = fetchMode === "navigate" || fetchDest === "document";
+  const pathname = request.nextUrl.pathname;
 
   // API requests typically have JSON content type or accept headers
   if (contentType.includes("application/json")) {
+    return false;
+  }
+  if (pathname.startsWith("/api/")) {
+    return false;
+  }
+  if (request.method !== "GET") {
     return false;
   }
   if (accept.includes("application/json") && !accept.includes("text/html")) {
     return false;
   }
 
-  // Browser requests typically accept HTML
-  return accept.includes("text/html") || accept.includes("*/*");
+  const acceptsHtml = accept.includes("text/html");
+  if (!acceptsHtml) {
+    return false;
+  }
+
+  // When available, fetch metadata is the strongest browser navigation signal.
+  if (fetchMode || fetchDest) {
+    return isNavigation;
+  }
+
+  return true;
 }
 
 type BlockReason = "rate-limit" | "bot" | "forbidden";
@@ -116,6 +135,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public files (static assets)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|json)).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|json)).*)",
   ],
 };

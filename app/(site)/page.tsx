@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { CallToAction } from "../glsilk/cta";
 import { FaqSectionV3 } from "../glsilk/faq-section-v3";
 import { FeatureSectionV2 } from "../glsilk/feature-section-v2";
 import { HeroSectionV1 } from "../glsilk/hero-section-v1";
 import { Integrations } from "../glsilk/integrations";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default function Home() {
   return (

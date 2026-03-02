@@ -45,7 +45,7 @@ export function CallToAction() {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
                 className="size-full"
-                src="https://www.youtube.com/embed/vL_NvSo7Lgo?autoplay=1"
+                src="https://www.youtube.com/embed/r1O29kQTx-0?autoplay=1"
                 title="Product Demo"
               />
             ) : null}
